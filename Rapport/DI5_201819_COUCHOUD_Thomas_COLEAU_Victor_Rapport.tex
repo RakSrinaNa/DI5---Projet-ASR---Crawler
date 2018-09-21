@@ -15,8 +15,8 @@
 \newcommand{\img}[3]{%
 	\begin{center}
 		\centering%
-		\IfFileExists{./#1}{%
-			\includegraphics[scale=#3]{#1}%
+		\IfFileExists{./Images/#1}{%
+			\includegraphics[scale=#3]{./Images/#1}%
 		}{%
 			\PackageError{TODO}{Image #1 missing!}{#2}%
 			$\boxed{Image\;#1\;missing}$%
@@ -53,6 +53,35 @@
 
 \begin{document}
 \part{Introduction}
+	Dans notre société moderne l'Internet occupe une place très importante.
+	Il offre une quantité pharaonique d'information en libre accès.
+	Parmi ces sources d'information, on trouve notamment des << wikis >> qui sont des encyclopédies collaboratives permettant la large diffusion de données.
+	
+	Malgré leur apparente générosité et leur connaissance des pratiques, ces sites n'apprécient que peu que les données qu'ils fournissent en soient extraites.
+	
+	Cette nouvelle mane d'information attire les convoitises et polarise les comportements.
+	D'un côté nous retrouvons les collecteurs de données cherchant à en agréger et stocker de plus en plus de leur propre chef.
+	De l'autre les sites mettant à disposition l'information dont le but paradoxal est de fournir gratuitement tout en conservant l'exclusivité.
+	
+	Cela entraine une guerre technologique entre crawlers et sites web.
+	Les premiers développent des technologies de plus en plus efficaces, rapides et discrètes.
+	Les seconds cherchent à contrecarrer les premiers grâce à des techniques de détection de plus en plus sofistiquées.
+
+	Le but de ce projet est d'étudier à la fois les techniques mises en place par les crawler pour se rendre invisible et celles mise en place par les sites pour se défendre.
+	Cette recherche se concrétisera par la réalisation d'un crawler effectuant ses connexions au travers d'un proxy.
+
+	\img{crawler.png}{Crawler}{0.5}
+	
+\part{Veille technique}
+	\chapter{Les proxy}
+	\chapter{Stratégies de masquage}
+		Rotation d'IP
+		Rotation des UserAgent
+		Gestion de sessions
+		Limitation du nombre de requêtes
+		Liste noire d'IP
+		Réessais
+\part{Application: Réalisation d'une crawler avec proxy}
 \part{Conclusion}
 
 \appendix		
