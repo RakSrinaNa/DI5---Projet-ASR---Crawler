@@ -1,0 +1,59 @@
+\documentclass[hideweeklyreports,noposter]{polytech/polytech}
+\usepackage{lmodern}
+\usepackage{textcomp}
+
+\usepackage{float}
+\usepackage{ltablex}
+\usepackage{graphicx}
+\usepackage[justification=centering]{caption}
+
+\usepackage{dirtree}
+
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
+
+\newcommand{\img}[3]{%
+	\begin{center}
+		\centering%
+		\IfFileExists{./#1}{%
+			\includegraphics[scale=#3]{#1}%
+		}{%
+			\PackageError{TODO}{Image #1 missing!}{#2}%
+			$\boxed{Image\;#1\;missing}$%
+		}%
+		\captionof{figure}{#2}%
+	\end{center}
+}
+\newcommand{\codec}[1]{\texttt{#1}}
+
+\schooldepartment{di}
+\typereport{pasrdi5}
+\reportyear{2018-2019}
+
+\title{Crawling web et requête HTTP par serveur proxy}
+%\subtitle{}
+
+\student{Thomas}{Couchoud}{thomas.couchoud@etu.univ-tours.fr}
+\student{Victor}{Coleau}{victor.coleau@etu.univ-tours.fr}
+\academicsupervisor{Mathieu}{Delalandre}{mathieu.delalandre@univ-tours.fr}
+
+\resume{} %TODO
+\motcle{} %TODO
+
+\abstract{} %TODO
+\keyword{} %TODO
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage[ampersand]{easylist}
+\AtBeginEnvironment{easylist}
+        {\ListProperties(Progressive*=3ex, Start1=1)}
+        {}
+        {}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\part{Introduction}
+\part{Conclusion}
+
+\appendix		
+\end{document}
