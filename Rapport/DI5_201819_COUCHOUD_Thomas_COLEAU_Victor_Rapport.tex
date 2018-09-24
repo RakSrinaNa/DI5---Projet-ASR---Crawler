@@ -74,13 +74,46 @@
 	
 \part{Veille technique}
 	\chapter{Les proxy}
+		\section{Késako?}
+			Un proxy est un composant logiciel servant d'intermédiaire entre deux hôtes afin de faciliter ou de surveiller leurs échanges.
+			
+			\subsection{Avantages}
+				Les proxys peuvent par exemple servir à contourner certains filtrages.
+				Supposons le cas d'un pays qui bloque l'accès à certains sites, en se connectant à un proxy non bloqué, l'utilisateur pourra accéder à son site au travers de ce dernier car le proxy ne dispose pas des mêmes règles de filtrage.
+				
+				A l'inverse, certains établissements scolaires ou entreprises limitent l'accès à certains sites grace à un serveur proxy. En effet, toutes les requêtes effectuées par les utilisateurs du réseau passe par ce serveur intermédiaire qui bloque les sites dont l'adresse a été spécifiquement interdite.
+				
+				Un autre avantage de l'utilisation d'un proxy est de pouvoir surfer anonymement. Les sites visités n'ont conscience que de l'adresse du proxy et non de(s) utilisateur(s) caché(s) derrière.
+				
+				De plus un proxy permet le masquage de son lieu de connexion. En effet le proxy peut ne pas être situé dans le même pays que l'utilisateur.
+				Si un site se base sur un système de géolocalisation pour afficher son contenu (YouTube, Google, Google Maps, etc.), sera prise en compte la géolocalisation du proxy.
+				
+			\subsection{Inconvénients}
+				Bien que les poxys offrent de nombreux avantages, ils ont aussi certains inconvénients.
+				S'agissant d'une plateforme reliant un utilisateur au web et effectuant les requêtes du premier, celui-ci voit passer tous les échanges.
+				Certains proxys pourraient alors les enregistrer à des fins malveillantes.
+				
+				L'intérêt d'un proxy étant important, il centralise toutes les requêtes d'une structure et peut donc être saturé ralentissant par la même occasion la connexion de tous les utilisateurs.
+				De manière générale on peut dire qu'une connexion internet passant par un proxy sera toujours plus lente qu'une connexion directe.
+			
+		\section{Description technique}
+		
+	
 	\chapter{Stratégies de masquage}
 		Rotation d'IP
 		Rotation des UserAgent
 		Gestion de sessions
 		Limitation du nombre de requêtes
-		Liste noire d'IP
-		Réessais
+		Réessai
+		
+	\chapter{Stratégies de défense}
+		Liste noire d'IP/comptes => Analyse du traffic => Attention à ne pas bloquer les utilisateurs normaux
+		CAPTCHA
+		Changer la structure du DOM régulièrement
+		Remplacer des parties du site par des images
+		
+		
+		
 \part{Application: Réalisation d'une crawler avec proxy}
 \part{Conclusion}
 
