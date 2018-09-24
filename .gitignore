@@ -1,3 +1,7 @@
 *.acn
 *.acr
 Rapport/.texpadtmp
+*.iml
+.idea
+target
+*.log
