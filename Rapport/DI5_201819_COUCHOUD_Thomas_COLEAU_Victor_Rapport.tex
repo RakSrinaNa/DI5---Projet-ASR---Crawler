@@ -12,6 +12,14 @@
 \floatplacement{figure}{H}
 \floatplacement{table}{H}
 
+\RequirePackage[at]{easylist}
+\AtBeginEnvironment{easylist}
+        {\ListProperties(Progressive*=3ex, Start1=1)}
+        {}
+        {}
+
+\newacronym{ua}{UA}{user-agent}
+
 \newcommand{\img}[3]{%
 	\begin{center}
 		\centering%
@@ -44,12 +52,6 @@
 \keyword{} %TODO
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\RequirePackage[ampersand]{easylist}
-\AtBeginEnvironment{easylist}
-        {\ListProperties(Progressive*=3ex, Start1=1)}
-        {}
-        {}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
 \part{Introduction}
@@ -65,7 +67,7 @@
 	
 	Cela entraine une guerre technologique entre crawlers et sites web.
 	Les premiers développent des technologies de plus en plus efficaces, rapides et discrètes.
-	Les seconds cherchent à contrecarrer les premiers grâce à des techniques de détection de plus en plus sofistiquées.
+	Les seconds cherchent à contrecarrer les premiers grâce à des techniques de détection de plus en plus sophistiquées.
 
 	Le but de ce projet est d'étudier à la fois les techniques mises en place par les crawler pour se rendre invisible et celles mise en place par les sites pour se défendre.
 	Cette recherche se concrétisera par la réalisation d'un crawler effectuant ses connexions au travers d'un proxy.
@@ -73,6 +75,87 @@
 	\img{crawler.png}{Crawler}{0.5}
 	
 \part{Veille technique}
+	\chapter{Stratégies de défense}
+		Afin de se défendre face aux demandes massives que peuvent représenter les crawlers, les créateurs de sites web ont imaginés plusieurs méthodes de contre-attaque.
+		Dans cette partie nous allons en développer quelques unes.
+		
+		\section{Liste noire}
+			Le principe de base d'une liste noire est de bannir du site les << utilisateurs >> trop agressifs.
+			Un << utilisateur >> peut être un compte inscrit sur le site ou plus simplement une adresse IP requêtant le serveur.	
+			
+			La problématique principale de cette méthode est différencier un utilisateur humain d'un automate.
+			Afin de prendre la décision de bannir ou non, plusieurs moyens sont à disposition des administrateurs:
+			
+			\begin{easylist}[itemize]
+				@ User-agent: Le \gls{ua} est un champ renseigné dans l'entête d'une requête HTTP.
+				Son but est d'identifier l'outil qui a engendré cette demande.
+				Par exemple un \gls{ua} de Firefox ressemble à << Mozilla/5.0 (X11; Ubuntu; Linux\_x86\_64; rv:62.0) Gecko/20100101 Firefox/62.0 >> tandis que celui d'un bot Google est de la forme << Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) >>.
+				
+				Grace à cette identification, il est possible de filtrer les requêtes pour n'accepter que celles provenant des navigateurs web standards.
+				
+				@ Adresse IP: Une approche peut être de se baser sur l'adresse IP permettant d'identifier une machine ou un réseau précis.
+				
+				@ Comportement de l'utilisateur: A partir des méthodes d'identifications précédentes, il est possible de définir une stratégie de bannissement plus juste.
+				En effet bannir tous les navigateurs qui ne sont pas Internet Explorer ou bien toutes les adresses IP commençant par 1 n'est que peu pertinent.
+				
+				Il est alors possible d'étudier les méthodes d'explorations du site afin de dénicher les comportement indésirables.
+				Ces derniers peuvent être plus ou moins simples à observer.
+				@@ Un nombre de requêtes humainement impossible (ex: 5 requêtes par seconde).
+				@@ Des temps de visite des pages très courts (ex: 0.5 secondes par page).
+				@@ Une fréquence de requêtage régulière (ex: toutes les secondes).
+				@@ Les sauts de pages à d'autres non reliées par hyperlien.
+			\end{easylist}
+			~\\
+			
+			La pertinence de cette méthode de bannissement dépends grandement de la qualité de reconnaissance des automates.
+			En effet, il se peut qu'un automate imite parfaitement le comportement humain, et donc ne soit pas détecté, tout comme un comportement humain inhabituel pourrait être banni par erreur.
+			L'objectif est donc de développer des méthodes de reconnaissance adaptées afin de ne pas perdre des visiteurs désirés.
+			
+		\section{CAPTCHA}
+			Le CAPTCHA est une famille de tests de Turing ayant pour but de différencier un utilisateur humain d'un automate.
+			Plusieurs types de CPATCHAs sont imaginables:
+			\begin{easylist}[itemize]
+				@ Reconnaitre une site de lettres altérées (ex: déformées, barrées, avec des trous, ...).
+				@ Cocher une case qui vérifie le comportement précédent de l'utilisateur.
+				@ Reconnaitre des parties spécifiques d'une image.
+			\end{easylist}
+			
+			\begin{figure}[H]
+				\begin{minipage}{0.5\textwidth}
+					\img{recaptcha-3.jpg}{Lettres altérées}{0.5}
+					\img{recaptcha-1.jpg}{Case à cocher}{0.5}
+				\end{minipage}
+				\begin{minipage}{0.49\textwidth}
+					\img{recaptcha-2.png}{Reconnaissance d'image}{0.5}
+				\end{minipage}
+				\caption{Exemples de reCAPTCHAs}
+			\end{figure}
+
+		\section{Modification du DOM}
+			Une autre approche serait non plus d'essayer de rejeter les automates mais de leur compliquer la tâche.
+			
+			Une méthode possible consiste à modifier constamment et régulièrement la structure du site (nom des classes, IDs, ...).
+			De même, il est envisageable de remplacer certaines parties du site (notamment le texte) par des images.
+			
+			De ce fait les automates spécifiques à un site donné devront être réadaptés fréquemment ce qui peut décourager leur développeur.
+
+	\chapter{Stratégies de masquage}
+		Comme décris précédemment, les gestionnaires de sites web tentent constamment de bloquer l'accès à leur contenu au travers de diverses méthodes.
+		Ces dernières reposent principalement sur le bloquage d'un identifiant unique à la personne ou bien par le bloquage d'un comportement suspect.
+		
+		Les personnes attaquant les sites ont donc pour but de contourner ces mesures soit en ayant plusieurs identifiants à leur disposition soit en essayant d'adopter un comportement proche d'un utilisateur normal.
+		
+		\section{Comportement du crawler}
+		
+			Rotation des UserAgent
+			Limitation du nombre de requêtes
+			Réessai
+
+		
+		\section{Utilisation de plusieurs identifiants}
+		Rotation d'IP
+		Gestion de sessions
+				
 	\chapter{Les proxy}
 		\section{Késako?}
 			Un proxy est un composant logiciel servant d'intermédiaire entre deux hôtes afin de faciliter ou de surveiller leurs échanges.
@@ -95,24 +178,6 @@
 				
 				L'intérêt d'un proxy étant important, il centralise toutes les requêtes d'une structure et peut donc être saturé ralentissant par la même occasion la connexion de tous les utilisateurs.
 				De manière générale on peut dire qu'une connexion internet passant par un proxy sera toujours plus lente qu'une connexion directe.
-			
-		\section{Description technique}
-		
-	
-	\chapter{Stratégies de masquage}
-		Rotation d'IP
-		Rotation des UserAgent
-		Gestion de sessions
-		Limitation du nombre de requêtes
-		Réessai
-		
-	\chapter{Stratégies de défense}
-		Liste noire d'IP/comptes => Analyse du traffic => Attention à ne pas bloquer les utilisateurs normaux
-		CAPTCHA
-		Changer la structure du DOM régulièrement
-		Remplacer des parties du site par des images
-		
-		
 		
 \part{Application: Réalisation d'une crawler avec proxy}
 \part{Conclusion}

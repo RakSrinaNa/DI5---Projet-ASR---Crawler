@@ -25,7 +25,7 @@ public class CrawlerRunner implements Callable<Integer>{
 	private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerRunner.class);
 	
 	private final static Pattern HTTP_PATTERN = Pattern.compile("^https?://.*");
-	private final static Pattern MEDIA_PATTERN = Pattern.compile("^.*\\.(jpg|png|jpeg|gif|webm|mp4)(\\?.*)?$");
+	private final static Pattern MEDIA_PATTERN = Pattern.compile("^.*\\.(jpg|png|jpeg|gif|webm|mp4|tif)(\\?.*)?$");
 	private final static Pattern SKIP_PATTERN = Pattern.compile("^(mailto:|javascript:|#|tel:|data:).*$");
 	
 	private final Queue<URL> toCrawl;
