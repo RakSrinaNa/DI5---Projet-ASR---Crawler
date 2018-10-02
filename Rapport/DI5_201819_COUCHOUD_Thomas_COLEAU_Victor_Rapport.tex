@@ -153,11 +153,6 @@
 		Les personnes attaquant les sites ont donc pour but de contourner ces mesures, soit en ayant plusieurs identifiants à leur disposition soit en essayant d'adopter un comportement proche d'un utilisateur normal.
 		
 		\section{Comportement du crawler}
-		
-			Rotation des UserAgent
-			Limitation du nombre de requêtes
-			Réessai
-
             Une première mesure qui pourrait être envisagée afin d'éviter que le crawler soit identifié est de mofidifer les headers de requête HTTP par défaut mis en place par les librairies permettant d'effectuer des demandes HTTP.
             En effet, si l'on prend par exemple la librairie urllib de Python, on remarque que le \gls{ua} par défaut est << Python-urllib/3.4 >> et que le Accept-Encoding est << identity >>.
             Avec un tel \gls{ua}, le modérateur peut facilement comprendre qu'un programme Python est à l'origine de ces requêtes et non un utilisateur humain utilisant un navigateur web standard.
@@ -183,10 +178,18 @@
             
 		
 		\section{Utilisation de plusieurs identifiants}
-		Rotation d'IP
-		Gestion de sessions
-				
-	\chapter{Les proxy}
+			Comme vu précédemment, les principales techniques anti-crawler reposent sur le bannissement d'adresse IP irrespectueuses.
+			Une méthode de contournement basique est donc de changer régulièrement d'adresse IP.
+			Les proxys sont donc une alternative parfaite (Voir \autoref{sec:proxys}).
+
+
+
+			De plus, certains sites utilisent des sessions ou comptes utilisateurs.
+			Un crawler pourrait donc en tirer parti en s'indentifiant officiellement sur le site afin de se faire passer pour un utilisateur standard.
+
+			Il est d'ailleurs poissible de créer et d'utiliser plusieurs comptes en parrallèle afin de répartir la charge de requêtes.
+
+	\chapter{Les proxy\label{sec:proxys}}
 		\section{Késako?}
 			Un proxy est un composant logiciel servant d'intermédiaire entre deux hôtes afin de faciliter ou de surveiller leurs échanges.
 			
