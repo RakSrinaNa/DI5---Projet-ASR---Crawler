@@ -79,7 +79,7 @@
 		Afin de se défendre face aux demandes massives que peuvent représenter les crawlers, les créateurs de sites web ont imaginés plusieurs méthodes de contre-attaque.
 		Dans cette partie nous allons en développer quelques unes.
 		
-		\section{Liste noire}
+		\section{Liste noire\label{sec:liste_noire}}
 			Le principe de base d'une liste noire est de bannir du site les << utilisateurs >> trop agressifs.
 			Un << utilisateur >> peut être un compte inscrit sur le site ou plus simplement une adresse IP requêtant le serveur.	
 			
@@ -139,24 +139,57 @@
 			
 			De ce fait les automates spécifiques à un site donné devront être réadaptés fréquemment ce qui peut décourager leur développeur.
 
+        \section{Attrapes-bots}
+            Afin de distinguer un humain d'un bot, il serait envisageable de baser notre différenciation sur l'exploration ou non d'une page web normalement non-visible d'un utilisateur lambda.
+            Html / CSS offrent la possibilité de masquer certains éléments tout en les incluant au sein du code source de la page.
+            
+            Cependant, un crawler innatentif ne fera pas la différence entre des éléments visibles ou non.
+            On pourrait donc renforcer la sécurité du site grâce à des liens pigés et bannir toute IP s'y rendant.
+
 	\chapter{Stratégies de masquage}
 		Comme décris précédemment, les gestionnaires de sites web tentent constamment de bloquer l'accès à leur contenu au travers de diverses méthodes.
-		Ces dernières reposent principalement sur le bloquage d'un identifiant unique à la personne ou bien par le bloquage d'un comportement suspect.
+		Ces dernières reposent principalement sur le bloquage d'un identifiant unique à la personne suite au repérage d'un comportement suspect.
 		
-		Les personnes attaquant les sites ont donc pour but de contourner ces mesures soit en ayant plusieurs identifiants à leur disposition soit en essayant d'adopter un comportement proche d'un utilisateur normal.
+		Les personnes attaquant les sites ont donc pour but de contourner ces mesures, soit en ayant plusieurs identifiants à leur disposition soit en essayant d'adopter un comportement proche d'un utilisateur normal.
 		
 		\section{Comportement du crawler}
-		
-			Rotation des UserAgent
-			Limitation du nombre de requêtes
-			Réessai
-
+            Une première mesure qui pourrait être envisagée afin d'éviter que le crawler soit identifié est de mofidifer les headers de requête HTTP par défaut mis en place par les librairies permettant d'effectuer des demandes HTTP.
+            En effet, si l'on prend par exemple la librairie urllib de Python, on remarque que le \gls{ua} par défaut est << Python-urllib/3.4 >> et que le Accept-Encoding est << identity >>.
+            Avec un tel \gls{ua}, le modérateur peut facilement comprendre qu'un programme Python est à l'origine de ces requêtes et non un utilisateur humain utilisant un navigateur web standard.
+            Il serait alors plus judicieux de remplacer notre \gls{ua} par celui d'un navigateur web répendu (Chrome, Firefox, Edge, etc.).
+            
+            De même, le Accept-Encoding peut, dans certains cas, compromettre l'anonymat du crawler.
+            Cependant, la modification de certaines informations du header peut entrainer des changements sur le site en question.
+            Par exemple, le header Accept-Langage indique les préférences utilisateur concernant la langue. 
+            Il se peut donc qu'un site mette à disposition deux versions en fonction de la langue souhaitée.
+            
+            
+            Une deuxième méthode serait de prendre en charge les cookies au travers de JavaScript.
+            En effet, ceux-ci peuvent être utilisés afin de reconnaitre un utilisateur ayant visité le site peu de temps auparavant.
+            Si un crawler se rend sur le site de manière intensive sans présenter ce cookie, le serveur pourrait se rendre compte qu'il ne s'agit pas d'un utilisateur faisant des requêtes succesives.
+            
+            Cepndant, enregistrer les cookies, peut aussi jouer en notre défaveur : ceux-ci sont un façon de garder un trace d'un utilisateur précis et donc de l'identifier (Voir \autoref{sec:liste_noire}).
+            
+            
+            Enfin, un trop grand nombre de requêtes en très peu de temps trahit un comportement robotique.
+            Il est donc important de controler la vitesse de notre crawler afin de ne pas surcharger la bande passante du site et risquer de se faire bannir.
+            
+            Cette recommandation est en opposition avec les techniques de parrallèlisation souvent mises en place afin d'accélérer la vitesse et l'efficacité du crawler.
+            
 		
 		\section{Utilisation de plusieurs identifiants}
-		Rotation d'IP
-		Gestion de sessions
-				
-	\chapter{Les proxy}
+			Comme vu précédemment, les principales techniques anti-crawler reposent sur le bannissement d'adresse IP irrespectueuses.
+			Une méthode de contournement basique est donc de changer régulièrement d'adresse IP.
+			Les proxys sont donc une alternative parfaite (Voir \autoref{sec:proxys}).
+
+
+
+			De plus, certains sites utilisent des sessions ou comptes utilisateurs.
+			Un crawler pourrait donc en tirer parti en s'indentifiant officiellement sur le site afin de se faire passer pour un utilisateur standard.
+
+			Il est d'ailleurs poissible de créer et d'utiliser plusieurs comptes en parrallèle afin de répartir la charge de requêtes.
+
+	\chapter{Les proxy\label{sec:proxys}}
 		\section{Késako?}
 			Un proxy est un composant logiciel servant d'intermédiaire entre deux hôtes afin de faciliter ou de surveiller leurs échanges.
 			
