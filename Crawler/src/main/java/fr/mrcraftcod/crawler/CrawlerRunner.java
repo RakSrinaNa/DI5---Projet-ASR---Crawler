@@ -59,7 +59,13 @@ public class CrawlerRunner implements Callable<Integer>{
 					final HttpResponse<String> requestResult = new StringGetRequestSender(site).getRequestResult();
 					if(requestResult.getStatus() == 200){
 						final Document rootDocument = Jsoup.parse(requestResult.getBody());
-						Stream<URL> stream1 = rootDocument.getElementsByTag("a").parallelStream().filter(aElem -> aElem.hasAttr("href")).map(aElem -> aElem.attr("href")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
+						Stream<URL> stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
+							if(aElem.hasAttr("href"))
+								return aElem.attr("href");
+							if(aElem.hasAttr("data-image"))
+								return aElem.attr("data-image");
+							return null;
+						}).filter(Objects::nonNull).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
 						
 						Stream<URL> stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.attr("src")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
 						

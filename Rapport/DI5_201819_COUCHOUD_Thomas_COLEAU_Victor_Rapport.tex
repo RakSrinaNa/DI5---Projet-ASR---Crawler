@@ -173,6 +173,8 @@
 		\section{Késako?}
 			Un proxy est un composant logiciel servant d'intermédiaire entre deux hôtes afin de faciliter ou de surveiller leurs échanges.
 			
+			\img{proxy.png}{La place d'un proxy dans une communicatiob}{}
+			
 			\subsection{Avantages}
 				Les proxys peuvent par exemple servir à contourner certains filtrages.
 				Supposons le cas d'un pays qui bloque l'accès à certains sites, en se connectant à un proxy non bloqué, l'utilisateur pourra accéder à son site au travers de ce dernier car le proxy ne dispose pas des mêmes règles de filtrage.
@@ -191,8 +193,41 @@
 				
 				L'intérêt d'un proxy étant important, il centralise toutes les requêtes d'une structure et peut donc être saturé ralentissant par la même occasion la connexion de tous les utilisateurs.
 				De manière générale on peut dire qu'une connexion internet passant par un proxy sera toujours plus lente qu'une connexion directe.
+				
+		\section{Alternative - VPN}
+			VPN est un acronyme signifiant << Virtual Private Network >>.
+			Tout comme les proxys ils permettent de faire apparaître notre navigation internet comme provenant d'une adresse IP distante.
+			
+			A la différence d'un proxy qui se configure par application au cas par cas (par exemple dans Firefox on peut avoir une configuration différente de celle dans Chrome).
+			En revanche un VPN capture l'ensemble des échanges réseau de la machine et est configuré directement dans le système d'exploitation.
+			Les différentes applications de la machine n'ont donc pas conscience de cette subtilité.
+			
+			\img{vpn.png}{La place d'un VPN dans une communication}{}
+			
+			Dans le cas de notre crawler, il parait plus adapté d'utiliser un proxy.
+			En effet seul ce dernier requiert d'être << masqué >> et passer toute notre connexion au travers d'un VPN semble être un peu overkill.
+			
+		\section{Présentation de proxys}
+			\begin{center}
+			\centering
+			\begin{tabularx}{\textwidth}{|X|X|X|X|X|}
+				\hline
+				Nom & Prix & Pays & Avantages & Inconvénients\\\hline
+				\href{https://proxy6.net/}{Proxy6} & 1.25\$ par IPv4 par mois & Un choix très large & API pour développeurs \& Le moins cher & \\\hline
+				\href{https://buyproxies.org/}{BuyProxies} & 2\$ par serveur proxy par mois & Un choix très large & Bande passante illimité \& renouvellement mensuel des proxys & \\\hline
+				\href{https://getfoxyproxy.org/}{FoxyProxy} & 10\$ par IP par mois & - & & Pays inconnu \& Le plus cher\\\hline
+				\href{https://proxyrack.com/}{ProxyRack} & 40\$ pour 50 connexions simultanées par mois & Un choix moyen de pays & Rotation des adresses IP \& Bande passante illimitée & Premier pack cher\\\hline
+			\end{tabularx}
+			\captionof{table}{Caractéristiques utilisateurs}
+		\end{center}
 		
 \part{Application: Réalisation d'une crawler avec proxy}
+	\chapter{Crawler basique}
+	
+	\chapter{Utilisation de stratégies de masquage}
+	
+	\chapter{Proxy}
+
 \part{Conclusion}
 
 \appendix		
