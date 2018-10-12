@@ -209,24 +209,94 @@
 			
 		\section{Présentation de proxys}
 			\begin{center}
-			\centering
-			\begin{tabularx}{\textwidth}{|X|X|X|X|X|}
-				\hline
-				Nom & Prix & Pays & Avantages & Inconvénients\\\hline
-				\href{https://proxy6.net/}{Proxy6} & 1.25\$ par IPv4 par mois & Un choix très large & API pour développeurs \& Le moins cher & \\\hline
-				\href{https://buyproxies.org/}{BuyProxies} & 2\$ par serveur proxy par mois & Un choix très large & Bande passante illimité \& renouvellement mensuel des proxys & \\\hline
-				\href{https://getfoxyproxy.org/}{FoxyProxy} & 10\$ par IP par mois & - & & Pays inconnu \& Le plus cher\\\hline
-				\href{https://proxyrack.com/}{ProxyRack} & 40\$ pour 50 connexions simultanées par mois & Un choix moyen de pays & Rotation des adresses IP \& Bande passante illimitée & Premier pack cher\\\hline
-			\end{tabularx}
-			\captionof{table}{Caractéristiques utilisateurs}
-		\end{center}
+				\centering
+				\begin{tabularx}{\textwidth}{|X|X|X|X|X|}
+					\hline
+					Nom & Prix & Pays & Avantages & Inconvénients\\\hline
+					\href{https://proxy6.net/}{Proxy6} & 1.25\$ par IPv4 par mois & Un choix très large & API pour développeurs \& Le moins cher & \\\hline
+					\href{https://buyproxies.org/}{BuyProxies} & 2\$ par serveur proxy par mois & Un choix très large & Bande passante illimité \& renouvellement mensuel des proxys & \\\hline
+					\href{https://getfoxyproxy.org/}{FoxyProxy} & 10\$ par IP par mois & - & & Pays inconnu \& Le plus cher\\\hline
+					\href{https://proxyrack.com/}{ProxyRack} & 40\$ pour 50 connexions simultanées par mois & Un choix moyen de pays & Rotation des adresses IP \& Bande passante illimitée & Premier pack cher\\\hline
+				\end{tabularx}
+				\captionof{table}{Caractéristiques utilisateurs}
+			\end{center}
 		
 \part{Application: Réalisation d'une crawler avec proxy}
 	\chapter{Crawler basique}
+		Dans le cadre de ce projet nous devons tester les stratégies de masquage adoptables par un crawler.
+		Afin de maitriser au mieux ces tests, nous avons souhaité développer nous même un tel logiciel.
+		
+		Afin d'obtenir un résultat de crawling pertinent tout en restant simple d'implémentation, nous avons choisi de se concentrer sur la recherche et téléchargement des images.
+		Pour ce faire, notre crawler explore tous les liens d'une page ainsi que toutes les images.
+		Il téléchargera les images trouvées tandis qu'il continuera d'explorer les liens d'un même domaine.
+		
+		Dans l'optique de garder le crawler simple, le javascript n'est pas supporté et seuls les liens dans les balises << a >> et << img >> sont traités.
+		
+		\section{Méthode implémentée}
+			Dans un premier temps, les problématiques de bloquage ne seront pas prises en compte, seule l'efficacité prime.
+			Pour cela, nous avons pensé à un système supportant le multi-threading augmentant la capacité d'acquisition des données.
+			
+			Le programme a été découpé en deux parties: les crawlers et les downloaders.
+			
+			Les crawlers sont en charge de l'exploration du site web et remplissent deux queues.
+			La première contient les prochains liens à explorer et la seconde les liens des images à télécharger.
+			
+			Les downloaders, eux, ne font que lire les liens de la queue qui leur est associée et télécharge les images.
+			
+			L'utilisation de ces queues nous permet de séparer l'exploration et le téléchargement dans des threads différents mais aussi d'avoir plusieurs crawlers et plusieurs downloaders.
+			
+			\subsection{Crawlers}
+				Le travail d'un crawler se décompose de la manière suivante:
+				\begin{easylist}
+					@ Acquisition d'un lien depuis la queue des liens.
+					Si aucun lien n'est disponible, le thread s'endort temporairement et reprendra au début.
+					@ Ajout de ce lien à la liste des liens déjà explorés.
+					@ Téléchargement de la page HTML.
+					@ Lecture de cette page et récupération des différents liens des balises << a >> et << img >>.
+					@ Tri des liens obtenus:
+					@@ Si le lien correspond à une image (basé sur l'extension): on vérifie que cette image n'a pas déjà été téléchargée.
+					Si tel est le cas, on l'ajoute dans la queue des images (queue sans doublons).
+					@@ Sinon: il vérifie si le lien a déjà été exploré.
+					Si ce n'est pas le cas on vérifie qu'il fait partie du même domaine que le lien en cours d'exploration.
+					Si tel est le cas on l'ajoute dans la queue des liens à explorer (queue sans doublons).
+				\end{easylist}
+			
+			\subsection{Downloaders}
+				Le travail d'un downloader se décompose de la manière suivante:
+				\begin{easylist}
+					@ Acquisition d'un lien depuis la queue des images.
+					Si aucun lien n'est disponible, le thread s'endort temporairement et reprendra au début.
+					@ Ajout de ce lien à la liste des images déjà téléchargées.
+					@ Récupération du nom de l'image à partir du lien.
+					@ Acquisition du contenu:
+					@@ Si le ficher de sortie est déjà présent, on ne fait que renseigner le lien dans un ficher texte au nom de l'image (contiendra tous les liens menant potentiellement à cette dernière).
+					@@ Sinon, on télécharge l'image.
+				\end{easylist}
+				
+		\section{Résultats de tests}
+			\begin{center}
+				\centering
+				\begin{tabularx}{\textwidth}{|X|X|}
+					\hline
+					Site & Observations\\\hline
+					\href{https://en.wikipedia.org/wiki/Main_Page}{Wikipedia} & \\\hline
+					\href{https://www.qwertee.com/}{Qwertee} & \\\hline
+					\href{https://www.etam.com/}{Etam} & \\\hline
+					\href{https://www.google.com/}{Google} & \\\hline
+					\href{https://www.4chan.org/}{4chan} & \\\hline
+					\href{https://tinder.com/}{Tinder} & \\\hline
+					\href{https://www.prettylittlethings.fr/}{PrettyLittleThings} & \\\hline
+					\href{https://www.ladechetterieduweb.com/}{LaDechetterieDuWeb} & \\\hline
+					\href{https://www.qwertee.com/}{Qwertee} & \\\hline
+				\end{tabularx}
+				\captionof{table}{Résultats sur différents sites}
+			\end{center}
 	
 	\chapter{Utilisation de stratégies de masquage}
+		
 	
 	\chapter{Proxy}
+		
 
 \part{Conclusion}
 
