@@ -12,27 +12,7 @@
 \floatplacement{figure}{H}
 \floatplacement{table}{H}
 
-\RequirePackage[at]{easylist}
-\AtBeginEnvironment{easylist}
-        {\ListProperties(Progressive*=3ex, Start1=1)}
-        {}
-        {}
-
 \newacronym{ua}{UA}{user-agent}
-
-\newcommand{\img}[3]{%
-	\begin{center}
-		\centering%
-		\IfFileExists{./Images/#1}{%
-			\includegraphics[scale=#3]{./Images/#1}%
-		}{%
-			\PackageError{TODO}{Image #1 missing!}{#2}%
-			$\boxed{Image\;#1\;missing}$%
-		}%
-		\captionof{figure}{#2}%
-	\end{center}
-}
-\newcommand{\codec}[1]{\texttt{#1}}
 
 \schooldepartment{di}
 \typereport{pasrdi5}
