@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -23,13 +24,15 @@ public class DownloaderRunner implements Callable<Integer>{
 	private final File outFolder;
 	private final Queue<DownloadElement> toDownload;
 	private final Set<URL> downloaded;
+	private final HashMap<String, String> headers;
 	private boolean stop = false;
 	private boolean canStop = false;
 	
-	public DownloaderRunner(File outFolder, Queue<DownloadElement> toDownload, Set<URL> downloaded){
+	public DownloaderRunner(File outFolder, Queue<DownloadElement> toDownload, Set<URL> downloaded, HashMap<String, String> headers){
 		this.outFolder = outFolder;
 		this.toDownload = toDownload;
 		this.downloaded = downloaded;
+		this.headers = headers;
 	}
 	
 	@Override
@@ -49,7 +52,7 @@ public class DownloaderRunner implements Callable<Integer>{
 				
 				final String[] urlPaths = downloadElement.getUrl().getPath().split("/");
 				final String fileName = urlPaths[urlPaths.length - 1];
-				final HttpResponse<InputStream> requestResult = new BinaryGetRequestSender(downloadElement.getUrl()).getRequestResult();
+				final HttpResponse<InputStream> requestResult = new BinaryGetRequestSender(downloadElement.getUrl(), headers).getRequestResult();
 				if(requestResult.getStatus() == 200){
 					final InputStream finalStream = requestResult.getBody();
 					try(finalStream){

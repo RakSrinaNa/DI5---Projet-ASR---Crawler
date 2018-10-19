@@ -7,6 +7,7 @@ import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
@@ -32,13 +33,15 @@ public class CrawlerRunner implements Callable<Integer>{
 	private final Set<URL> crawled;
 	private final Queue<DownloadElement> images;
 	private final Set<URL> downloaded;
+	private final HashMap<String, String> headers;
 	private boolean stop = false;
 	
-	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded){
+	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded, HashMap<String, String> headers){
 		this.toCrawl = toCrawl;
 		this.crawled = crawled;
 		this.images = images;
 		this.downloaded = downloaded;
+		this.headers = headers;
 	}
 	
 	@Override
@@ -56,7 +59,7 @@ public class CrawlerRunner implements Callable<Integer>{
 					
 					LOGGER.info("Crawler is crawling link {}", site);
 					
-					final HttpResponse<String> requestResult = new StringGetRequestSender(site).getRequestResult();
+					final HttpResponse<String> requestResult = new StringGetRequestSender(site, headers).getRequestResult();
 					if(requestResult.getStatus() == 200){
 						final Document rootDocument = Jsoup.parse(requestResult.getBody());
 						Stream<URL> stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
