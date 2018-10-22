@@ -41,11 +41,12 @@ public class Main{
 		HEADERS.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 		HEADERS.put("Accept-Encoding", "gzip, deflate, br");
 		HEADERS.put("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3");
+		HEADERS.put("Cache-Control", "no-cache");
 		
 		Set<URL> crawled = ConcurrentHashMap.newKeySet();
 		Set<URL> downloaded = ConcurrentHashMap.newKeySet();
-		Queue<DownloadElement> images = new ConcurrentLinkedQueue<>();
-		Queue<URL> toCrawl = new ConcurrentLinkedQueue<>(parameters.getSites());
+		Queue<DownloadElement> images = new LimitedConcurrentLinkedQueue<>();
+		Queue<URL> toCrawl = new LimitedConcurrentLinkedQueue<>(parameters.getSites());
 		
 		LOGGER.info("Added {} sites with {} threads ({} crawlers, {} downloaders)", parameters.getSites().size(), (int) (1.5 * parameters.getThreadCount()), parameters.getThreadCount(), parameters.getThreadCount());
 		

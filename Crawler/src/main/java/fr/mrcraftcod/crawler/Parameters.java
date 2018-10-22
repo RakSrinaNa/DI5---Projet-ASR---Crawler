@@ -4,6 +4,7 @@ import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -46,6 +47,14 @@ public class Parameters{
 	
 	@Option(name = "-l", aliases = "--link", usage = "Add website to crawl")
 	public void addSite(URL url){
+		if(!url.toString().endsWith("/")){
+			try{
+				url = new URL(url.toString() + "/");
+			}
+			catch(final MalformedURLException e){
+				LOGGER.error("", e);
+			}
+		}
 		this.sites.add(url);
 	}
 	

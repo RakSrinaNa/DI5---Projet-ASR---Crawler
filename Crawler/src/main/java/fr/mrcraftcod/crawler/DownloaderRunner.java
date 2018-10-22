@@ -51,7 +51,10 @@ public class DownloaderRunner implements Callable<Integer>{
 				File out = new File(outFolder, FileUtils.sanitizeFileName(downloadElement.getUrl().getHost()));
 				
 				final String[] urlPaths = downloadElement.getUrl().getPath().split("/");
-				final String fileName = urlPaths[urlPaths.length - 1];
+				String fileName = urlPaths[urlPaths.length - 1];
+				if(fileName.length() > 255){
+					fileName = fileName.substring(fileName.length() - 255);
+				}
 				final HttpResponse<InputStream> requestResult = new BinaryGetRequestSender(downloadElement.getUrl(), headers).getRequestResult();
 				if(requestResult.getStatus() == 200){
 					final InputStream finalStream = requestResult.getBody();
