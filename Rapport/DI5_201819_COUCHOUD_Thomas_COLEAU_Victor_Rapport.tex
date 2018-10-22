@@ -52,7 +52,7 @@
 	Le but de ce projet est d'étudier à la fois les techniques mises en place par les crawler pour se rendre invisible et celles mise en place par les sites pour se défendre.
 	Cette recherche se concrétisera par la réalisation d'un crawler effectuant ses connexions au travers d'un proxy.
 
-	\img{crawler.png}{Crawler}{0.5}
+	\img{crawler.png}{Crawler}{scale=0.5}
 	
 \part{Veille technique}
 	\chapter{Stratégies de défense}
@@ -102,11 +102,11 @@
 			
 			\begin{figure}[H]
 				\begin{minipage}{0.5\textwidth}
-					\img{recaptcha-3.jpg}{Lettres altérées}{0.5}
-					\img{recaptcha-1.jpg}{Case à cocher}{0.5}
+					\img{recaptcha-3.jpg}{Lettres altérées}{scale=0.5}
+					\img{recaptcha-1.jpg}{Case à cocher}{scale=0.5}
 				\end{minipage}
 				\begin{minipage}{0.49\textwidth}
-					\img{recaptcha-2.png}{Reconnaissance d'image}{0.5}
+					\img{recaptcha-2.png}{Reconnaissance d'image}{scale=0.5}
 				\end{minipage}
 				\caption{Exemples de reCAPTCHAs}
 			\end{figure}
@@ -294,6 +294,14 @@
 	
 	\chapter{Utilisation de stratégies de masquage}
 		%TODO: intro
+		Afin de faire ressembler au mieux les requêtes de notre crawler à celles d'un navigateur standard nous avons décidé d'imiter le plus fidèlement possible leur header.
+		Pour cela nous commencé par inspecter les données que reçois le serveur suite à la navigation depuis Firefox.
+		
+		\phpsourcefile{req.php}
+		
+		Avec ce code nous obtenons le résultat suivant:
+		\img{headFirefox.png}{Paramètres de la requête GET}{}
+		
 		\section{User agent}
 		\section{Limite de requêtage}
 	
