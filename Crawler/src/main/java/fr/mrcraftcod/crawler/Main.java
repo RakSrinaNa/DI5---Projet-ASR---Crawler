@@ -41,7 +41,6 @@ public class Main{
 		HEADERS.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 		HEADERS.put("Accept-Encoding", "gzip, deflate, br");
 		HEADERS.put("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3");
-		HEADERS.put("Cookie", "_ga=GA1.2.109747417.1539355868; _gid=GA1.2.424917402.1539952285; _gat_gtag_UA_100751702_2=1");
 		
 		Set<URL> crawled = ConcurrentHashMap.newKeySet();
 		Set<URL> downloaded = ConcurrentHashMap.newKeySet();
