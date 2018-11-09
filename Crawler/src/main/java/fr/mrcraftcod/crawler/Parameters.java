@@ -8,8 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by Thomas Couchoud (MrCraftCod - zerderr@gmail.com) on 01/09/2018.
@@ -20,7 +20,7 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class Parameters{
 	private static final Logger LOGGER = LoggerFactory.getLogger(Parameters.class);
-	private Set<URL> sites = new HashSet<>();
+	private List<URL> sites = new LinkedList<>();
 	private int threadCount = 4;
 	private File outFolder = null;
 	
@@ -32,7 +32,7 @@ public class Parameters{
 	public Parameters(){
 	}
 	
-	public Set<URL> getSites(){
+	public List<URL> getSites(){
 		return sites;
 	}
 	
