@@ -6,25 +6,24 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class LimitedConcurrentLinkedQueue<E> extends ConcurrentLinkedQueue<E>{
-	private final Logger LOGGER = LoggerFactory.getLogger(LimitedConcurrentLinkedQueue.class);
+public class LimitedThreadConcurrentLinkedQueue<E> extends ConcurrentLinkedQueue<E>{
+	private final Logger LOGGER = LoggerFactory.getLogger(LimitedThreadConcurrentLinkedQueue.class);
 	private final HashMap<Long, Long> lastAccess;
 	private final long DELTA_MS = 1000L;
 	
-	public LimitedConcurrentLinkedQueue(){
+	public LimitedThreadConcurrentLinkedQueue(){
 		this.lastAccess = new HashMap<>();
 	}
 	
-	public LimitedConcurrentLinkedQueue(final Collection<? extends E> c){
+	public LimitedThreadConcurrentLinkedQueue(final Collection<? extends E> c){
 		super(c);
 		this.lastAccess = new HashMap<>();
 	}
 	
+	@SuppressWarnings("Duplicates")
 	@Override
 	public E poll(){
-		final AtomicReference<E> obj = new AtomicReference<>(null);
 		final var lastTime = lastAccess.get(Thread.currentThread().getId());
 		if(Objects.nonNull(lastTime)){
 			final var diff = lastTime + DELTA_MS - System.currentTimeMillis();
