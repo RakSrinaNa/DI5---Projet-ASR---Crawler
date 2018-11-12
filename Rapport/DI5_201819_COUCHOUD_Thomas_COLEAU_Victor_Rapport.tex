@@ -125,6 +125,67 @@
             
             Cependant, un crawler innatentif ne fera pas la différence entre des éléments visibles ou non.
             On pourrait donc renforcer la sécurité du site grâce à des liens pigés et bannir toute IP s'y rendant.
+            
+    \chapter{Outils d'analyse}
+    	Lors de la réalisation de notre crawler et des stratégies de masquage qu'il implémente, nous avons du analyser les traces qu'il laisse sur un site.
+    	Pour cela nous avons mis en place un serveur apache et lancé notre crawler dessus.
+    	
+    	Nous allons ici présenter deux manières d'analyser l'activité des clients d'un serveur.
+    	
+		\section{Logs}
+			La manière la plus simple de voir le traffic de notre site est de regarder les logs.
+			
+			%TODO: Exemple log
+			
+			L'exemple ci-dessus est un extrait de l'un de ces logs.
+			On y retrouve les informations suivantes:
+			\begin{easylist}[itemize]
+				@ Adresse IP du client.
+				@ Le nom de domaine.
+				@ L'heure.
+				@ Le type de requête (GET, POST, ...).
+				@ La page demandée.
+				@ Le protocol (HTTP/1.1).
+				@ Le code HTTP retourné (200, 404, 403, 500, ...).
+				@ La taille de la réponse.
+				@ Origine de la requête.
+				@ \gls{ua}.
+			\end{easylist}
+
+			Grâce à celles-ci nous pouvons identifier deux des caractéristiques citées plus haut (\gls{ua} et IP) du client.
+			
+			Nous pouvons, à partir d'un tel fichier, induire des informations plus poussées.
+			Par exemple il est possible de recréer le chemin parcouru par l'utilisateur grâce à son adresse IP, \gls{ua} et temps de la requête.
+			
+			Du fait de sa grossièreté, le fichier de log est peu pratique à lire et interpréter.
+			En revanche, un algorithme performant pourra repérer les utilisations incohérentes, impossibles et/ou humainement infaisables.
+			
+		\section{Urchin}
+			Afin de simplifier l'analyse des logs pour tout le monde, des outils spécifiques ce sont créés.
+			Nous allons ici présenter Urchin v6 qui analyse les logs et offre des vues graphiques de nombreuses métriques.
+			Ces dernières peuvent être obtenues sur différentes périodes (journée, mois, période définie, ...).
+			
+			\img{u1.png}{Nombre de visites}{}
+			
+			Sur ces représentations graphiques nous pouvons facilement analyser les pics de fréquentation.
+			Ceux-ci peuvent être associés à l'arrivée d'un bot.
+			
+			\img{u2.png}{Temps de visite}{}
+			
+			Ce schéma nous illustre les temps de visites par page.
+			Si un pic entre 0-10 secondes se fait ressentir, il est possible que cela soit du à un automate.
+			
+			\img{u3.png}{Provenance des visites}{}
+			
+			Dans le cas d'un site localisé (une langue précise par exemple), il peut être utile d'obtenir les origines des requêtes.
+			Si un grand nombre sont effectuées depuis un pays extérieur, il est peu probable que cela soit normal.
+			
+			\img{u4.png}{Robots/User-Agents}{}
+			\img{u5.png}{Robots/User-Agents précis}{}
+			
+			Sur cette page nous pouvons observer les \glspl{ua} qui nous ont visités.
+			Si l'on en repère un étrange et récurrent, il faut alors se poser des questions.
+			Il est aussi possible d'obtenir plus de détails sur chaque robot.
 
 	\chapter{Stratégies de masquage}
 		Comme décris précédemment, les gestionnaires de sites web tentent constamment de bloquer l'accès à leur contenu au travers de diverses méthodes.
@@ -301,9 +362,55 @@
 		
 		Avec ce code nous obtenons le résultat suivant:
 		\img{headFirefox.png}{Paramètres de la requête GET}{}
-		
+			
 		\section{User agent}
+			La première chose a été de changer le \gls{ua}. Etant donné que nous utilisons une librairie (Unirest), il nous suffit de passer en paramètre nos headers.
+			Ces derniers sont basés sur les tests précédents:
+			\begin{easylist}[itemize]
+				@ Le \gls{ua}
+				@ Accept
+				@ Aceept-Encoding
+				@ Accept-Language
+				@ Cache-Control
+			\end{easylist}
+
+			Après un test réalisé en local, nous avons pu confirmer que les headers parviennent bien au serveur et le User-Agent est bien celui défini dans le code.
+			 
 		\section{Limite de requêtage}
+			La deuxième étape consiste à limiter le nombre de requêtes envoyées au serveur.
+			Nous avons imaginé deux méthodes: limiter chaque thread ou limiter l'ensemble de ces derniers.
+			
+			Dans les deux cas nous faisons une surcharge de ConcurrentLinkedQueue et n'avons plus qu'à gérer le délais d'accès.
+			En effet la classe mère gère déjà les accès concurrent.
+			
+			\subsection{Sur l'ensemble}
+				Cette classe s'intitule  LimitedGlobalConcurrentLinkedQueue.
+				Dans celle-ci nous avons redéfini la méthode poll permettant d'obtenir le prochain élément.
+				
+				Le procédé est le suivant:
+				\begin{easylist}[itemize]
+					@ On calcule le $\Delta t$ séparant le temps de notre demande d'accès et le temps du dernier accès à une valeur.
+					@ Si ce $\Delta t$ est inférieur à un $\Delta_r$ de référence on endort le thread pour une durée de $\Delta_r - \Delta t$.
+					
+					Ce temps écoulé, le thread réitérera sa demande.
+					@ Si $\Delta t$ est supérieur à $\Delta_r$ on met à jour le temps du dernier accès et donnons le prochain élément.
+				\end{easylist}
+
+				Grâce à cette implémentation nous arrivons à passer plus inaperçu auprès du serveur crawlé.
+				Cependant on induit un temps d'attente global très fort ralentissant \textit{de facto} l'exécution de notre programme.
+			
+			\subsection{Par thread}
+				Cette classe s'intitule  LimitedThreadConcurrentLinkedQueue.
+				Dans celle-ci nous avons redéfini la méthode poll permettant d'obtenir le prochain élément.
+				
+				Le procédé est le suivant:
+				\begin{easylist}[itemize]
+					@ On calcule le $\Delta t$ séparant le temps de notre demande d'accès et le temps du dernier accès du thread en cours à une valeur.
+					@ Si ce $\Delta t$ est inférieur à un $\Delta_r$ de référence on endort le thread pour une durée de $\Delta_r - \Delta t$.
+					@ A son réveil (si il y eut), on met à jour le temps du dernier accès et donnons le prochain élément.
+				\end{easylist}
+
+				En comparaison à la méthode globale, celle-ci est largement plus rapide mais de fait moins discrète.
 	
 	\chapter{Proxy}
 		
