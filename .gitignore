@@ -4,5 +4,5 @@ Rapport/.texpadtmp
 *.iml
 .idea
 target
-*.log
+Crawler/log/
 Crawler/Download
