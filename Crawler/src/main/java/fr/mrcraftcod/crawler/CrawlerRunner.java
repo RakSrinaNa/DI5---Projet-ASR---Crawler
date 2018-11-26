@@ -64,15 +64,15 @@ public class CrawlerRunner implements Callable<Integer>{
 						final Document rootDocument = Jsoup.parse(requestResult.getBody());
 						Stream<URL> stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
 							if(aElem.hasAttr("href"))
-								return aElem.attr("href");
+								return aElem.absUrl("href");
 							if(aElem.hasAttr("data-image"))
-								return aElem.attr("data-image");
+								return aElem.absUrl("data-image");
 							return null;
 						}).filter(Objects::nonNull).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
 						
-						Stream<URL> stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.attr("src")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
+						Stream<URL> stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
 						
-						images.addAll(rootDocument.getElementsByTag("img").parallelStream().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.attr("src")).map(linkStr -> getImageURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link)).map(link -> new DownloadElement(site, link)).collect(Collectors.toSet()));
+						images.addAll(rootDocument.getElementsByTag("img").parallelStream().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getImageURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link)).map(link -> new DownloadElement(site, link)).collect(Collectors.toSet()));
 						
 						int added = 0;
 						int picAdded = 0;
