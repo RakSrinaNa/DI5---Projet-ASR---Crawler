@@ -34,6 +34,7 @@ public class CrawlerRunner implements Callable<Integer>{
 	private final Queue<DownloadElement> images;
 	private final Set<URL> downloaded;
 	private final HashMap<String, String> headers;
+	private final boolean recursive;
 	private boolean stop = false;
 	
 	/**
@@ -44,13 +45,15 @@ public class CrawlerRunner implements Callable<Integer>{
 	 * @param images     The queue of images to download.
 	 * @param downloaded The set of downloaded images.
 	 * @param headers    The set of headers to use.
+	 * @param recursive  True if the crawler is crawling recursively.
 	 */
-	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded, HashMap<String, String> headers){
+	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded, HashMap<String, String> headers, boolean recursive){
 		this.toCrawl = toCrawl;
 		this.crawled = crawled;
 		this.images = images;
 		this.downloaded = downloaded;
 		this.headers = headers;
+		this.recursive = recursive;
 	}
 	
 	@Override
@@ -98,7 +101,7 @@ public class CrawlerRunner implements Callable<Integer>{
 								}
 								else if(!crawled.contains(link)){
 									if(link.getHost().equals(site.getHost())){
-										if(!toCrawl.contains(link)){
+										if(recursive && !toCrawl.contains(link)){
 											if(toCrawl.add(link)){
 												added++;
 											}

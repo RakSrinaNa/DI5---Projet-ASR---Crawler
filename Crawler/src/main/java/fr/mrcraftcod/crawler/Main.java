@@ -51,7 +51,7 @@ public class Main{
 		
 		ExecutorService service = Executors.newFixedThreadPool((int) (1.5 * parameters.getThreadCount()));
 		
-		List<CrawlerRunner> crawlers = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new CrawlerRunner(toCrawl, crawled, images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())))).collect(Collectors.toList());
+		List<CrawlerRunner> crawlers = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new CrawlerRunner(toCrawl, crawled, images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())), parameters.getRecursive())).collect(Collectors.toList());
 		List<DownloaderRunner> downloaders = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new DownloaderRunner(parameters.getOutFolder(), images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())))).collect(Collectors.toList());
 		
 		List<Future<Integer>> futuresCrawler = crawlers.stream().map(service::submit).collect(Collectors.toList());

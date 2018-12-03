@@ -22,8 +22,12 @@ public class Parameters{
 	private static final Logger LOGGER = LoggerFactory.getLogger(Parameters.class);
 	private List<URL> sites = new LinkedList<>();
 	private int threadCount = 4;
+	private boolean recursive = false;
 	private File outFolder = null;
 	
+	public boolean getRecursive(){
+		return this.recursive;
+	}
 	
 	public File getOutFolder(){
 		return outFolder;
@@ -81,5 +85,10 @@ public class Parameters{
 	@Option(name = "-t", aliases = "--thread_count", usage = "The number of thread to create")
 	public void setThreadCount(int threadCount){
 		this.threadCount = threadCount;
+	}
+	
+	@Option(name = "-r", aliases = "--recursive", usage = "Set the recursive status of the crawlers")
+	public void setRecursive(boolean recursive){
+		this.recursive = recursive;
 	}
 }
