@@ -45,7 +45,12 @@ public class RandomConcurrentLinkedList<E> extends LinkedList<E>{
 			int i = nextIndex % s;
 			E obj = super.get(i);
 			super.remove(i);
-			nextIndex = ThreadLocalRandom.current().nextInt(size());
+			if(s < 2){
+				nextIndex = 0;
+			}
+			else{
+				nextIndex = ThreadLocalRandom.current().nextInt(size());
+			}
 			return obj;
 		}
 	}
