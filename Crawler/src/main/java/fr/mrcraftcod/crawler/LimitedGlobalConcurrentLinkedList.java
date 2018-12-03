@@ -3,20 +3,19 @@ package fr.mrcraftcod.crawler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class LimitedGlobalConcurrentLinkedQueue<E> extends ConcurrentLinkedQueue<E>{
-	private static final long serialVersionUID = 5437264731468295683L;
-	private final Logger LOGGER = LoggerFactory.getLogger(LimitedGlobalConcurrentLinkedQueue.class);
+public class LimitedGlobalConcurrentLinkedList<E> extends RandomConcurrentLinkedList<E>{
+	private static final long serialVersionUID = 1210224138182261156L;
+	private final Logger LOGGER = LoggerFactory.getLogger(LimitedGlobalConcurrentLinkedList.class);
 	private final AtomicLong lastAccess;
 	private final long DELTA_MS = 1000L;
 	
-	public LimitedGlobalConcurrentLinkedQueue(){
+	public LimitedGlobalConcurrentLinkedList(){
 		this.lastAccess = new AtomicLong(0);
 	}
 	
-	public LimitedGlobalConcurrentLinkedQueue(final Collection<? extends E> c){
+	public LimitedGlobalConcurrentLinkedList(final Collection<? extends E> c){
 		super(c);
 		this.lastAccess = new AtomicLong(0);
 	}

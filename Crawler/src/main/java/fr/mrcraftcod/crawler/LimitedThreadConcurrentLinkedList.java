@@ -5,19 +5,18 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class LimitedThreadConcurrentLinkedQueue<E> extends ConcurrentLinkedQueue<E>{
-	private static final long serialVersionUID = -5846252918087171521L;
-	private final Logger LOGGER = LoggerFactory.getLogger(LimitedThreadConcurrentLinkedQueue.class);
+public class LimitedThreadConcurrentLinkedList<E> extends RandomConcurrentLinkedList<E>{
+	private static final long serialVersionUID = 2071162860767681301L;
+	private final Logger LOGGER = LoggerFactory.getLogger(LimitedThreadConcurrentLinkedList.class);
 	private final HashMap<Long, Long> lastAccess;
 	private final long DELTA_MS = 1000L;
 	
-	public LimitedThreadConcurrentLinkedQueue(){
+	public LimitedThreadConcurrentLinkedList(){
 		this.lastAccess = new HashMap<>();
 	}
 	
-	public LimitedThreadConcurrentLinkedQueue(final Collection<? extends E> c){
+	public LimitedThreadConcurrentLinkedList(final Collection<? extends E> c){
 		super(c);
 		this.lastAccess = new HashMap<>();
 	}
