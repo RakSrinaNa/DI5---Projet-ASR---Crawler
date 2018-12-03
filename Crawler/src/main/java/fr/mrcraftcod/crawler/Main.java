@@ -4,10 +4,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -22,8 +19,7 @@ import java.util.stream.IntStream;
 public class Main{
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	
-	
-	private final static HashMap<String, String> HEADERS = new HashMap<>(){};
+	private final static List<HashMap<String, String>> HEADERS = new ArrayList<>();
 	
 	
 	public static void main(String[] args){
@@ -37,11 +33,14 @@ public class Main{
 			return;
 		}
 		
-		HEADERS.put("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0");
-		HEADERS.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-		HEADERS.put("Accept-Encoding", "gzip, deflate, br");
-		HEADERS.put("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3");
-		HEADERS.put("Cache-Control", "no-cache");
+		var headers1 = new HashMap<String, String>();
+		headers1.put("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0");
+		headers1.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+		headers1.put("Accept-Encoding", "gzip, deflate, br");
+		headers1.put("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3");
+		headers1.put("Cache-Control", "no-cache");
+		
+		HEADERS.add(headers1);
 		
 		Set<URL> crawled = ConcurrentHashMap.newKeySet();
 		Set<URL> downloaded = ConcurrentHashMap.newKeySet();
@@ -52,8 +51,8 @@ public class Main{
 		
 		ExecutorService service = Executors.newFixedThreadPool((int) (1.5 * parameters.getThreadCount()));
 		
-		List<CrawlerRunner> crawlers = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new CrawlerRunner(toCrawl, crawled, images, downloaded, HEADERS)).collect(Collectors.toList());
-		List<DownloaderRunner> downloaders = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new DownloaderRunner(parameters.getOutFolder(), images, downloaded, HEADERS)).collect(Collectors.toList());
+		List<CrawlerRunner> crawlers = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new CrawlerRunner(toCrawl, crawled, images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())))).collect(Collectors.toList());
+		List<DownloaderRunner> downloaders = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new DownloaderRunner(parameters.getOutFolder(), images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())))).collect(Collectors.toList());
 		
 		List<Future<Integer>> futuresCrawler = crawlers.stream().map(service::submit).collect(Collectors.toList());
 		List<Future<Integer>> futuresDownloader = downloaders.stream().map(service::submit).collect(Collectors.toList());

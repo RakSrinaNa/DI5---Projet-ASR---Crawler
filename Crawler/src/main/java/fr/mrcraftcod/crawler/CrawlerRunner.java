@@ -1,9 +1,7 @@
 package fr.mrcraftcod.crawler;
 
-import com.mashape.unirest.http.HttpResponse;
 import fr.mrcraftcod.utils.http.requestssenders.get.StringGetRequestSender;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.URL;
@@ -17,6 +15,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * The crawler itself.
+ * <p>
  * Created by Thomas Couchoud (MrCraftCod - zerderr@gmail.com) on 2018-09-21.
  *
  * @author Thomas Couchoud
@@ -36,6 +36,15 @@ public class CrawlerRunner implements Callable<Integer>{
 	private final HashMap<String, String> headers;
 	private boolean stop = false;
 	
+	/**
+	 * Constructor.
+	 *
+	 * @param toCrawl    The queue of the links to crawl.
+	 * @param crawled    The set of crawled links.
+	 * @param images     The queue of images to download.
+	 * @param downloaded The set of downloaded images.
+	 * @param headers    The set of headers to use.
+	 */
 	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded, HashMap<String, String> headers){
 		this.toCrawl = toCrawl;
 		this.crawled = crawled;
@@ -45,13 +54,12 @@ public class CrawlerRunner implements Callable<Integer>{
 	}
 	
 	@Override
-	public Integer call() throws Exception{
+	public Integer call(){
 		LOGGER.info("Crawler started");
-		int crawledCount = 0;
-		int retryCounter = 0;
+		var crawledCount = 0;
+		var retryCounter = 0;
 		while(!stop){
 			try{
-				
 				URL site;
 				if((site = toCrawl.poll()) != null){
 					crawled.add(site);
@@ -59,27 +67,27 @@ public class CrawlerRunner implements Callable<Integer>{
 					
 					LOGGER.info("Crawler is crawling link {}", site);
 					
-					final HttpResponse<String> requestResult = new StringGetRequestSender(site, headers).getRequestResult();
+					final var requestResult = new StringGetRequestSender(site, headers).getRequestResult();
 					if(requestResult.getStatus() == 200){
-						final Document rootDocument = Jsoup.parse(requestResult.getBody());
-						Stream<URL> stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
-							if(aElem.hasAttr("href"))
+						final var rootDocument = Jsoup.parse(requestResult.getBody());
+						var stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
+							if(aElem.hasAttr("href")){
 								return aElem.absUrl("href");
-							if(aElem.hasAttr("data-image"))
+							}
+							if(aElem.hasAttr("data-image")){
 								return aElem.absUrl("data-image");
+							}
 							return null;
 						}).filter(Objects::nonNull).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
-						
-						Stream<URL> stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
-						
+						var stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
 						images.addAll(rootDocument.getElementsByTag("img").parallelStream().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getImageURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link)).map(link -> new DownloadElement(site, link)).collect(Collectors.toSet()));
 						
-						int added = 0;
-						int picAdded = 0;
-						for(URL link : Stream.concat(stream1, stream2).collect(Collectors.toSet())){
-							String[] paths = link.getPath().split("/");
+						var added = 0;
+						var picAdded = 0;
+						for(var link : Stream.concat(stream1, stream2).collect(Collectors.toSet())){
+							var paths = link.getPath().split("/");
 							if(paths.length > 0){
-								String resource = paths[paths.length - 1];
+								var resource = paths[paths.length - 1];
 								if(MEDIA_PATTERN.matcher(resource).matches()){
 									link = getImageURL(site, link.toString());
 									if(!downloaded.contains(link)){
@@ -110,8 +118,7 @@ public class CrawlerRunner implements Callable<Integer>{
 						LOGGER.error("Response code for page {} was {}", site, requestResult.getStatus());
 					}
 					
-					if(images.size() > 1000)
-					{
+					if(images.size() > 1000){
 						LOGGER.info("Crawler waiting, too many images to download");
 						Thread.sleep(10000);
 					}
@@ -133,16 +140,14 @@ public class CrawlerRunner implements Callable<Integer>{
 		return crawledCount;
 	}
 	
-	private URL getImageURL(URL site, String linkStr){
-		if(linkStr.contains("#")){
-			linkStr = linkStr.substring(0, linkStr.indexOf("#"));
-		}
-		if(linkStr.contains("?")){
-			linkStr = linkStr.substring(0, linkStr.indexOf("?"));
-		}
-		return getURL(site, linkStr);
-	}
-	
+	/**
+	 * Get the full url of a link.
+	 *
+	 * @param site    The url from where the link have been found.
+	 * @param linkStr The url.
+	 *
+	 * @return The full url.
+	 */
 	private URL getURL(URL site, String linkStr){
 		linkStr = linkStr.replace(" ", "%20");
 		try{
@@ -172,6 +177,27 @@ public class CrawlerRunner implements Callable<Integer>{
 		return null;
 	}
 	
+	/**
+	 * Get the full url of an image.
+	 *
+	 * @param site    The url from where the image have been found.
+	 * @param linkStr The url of the image.
+	 *
+	 * @return A full image url.
+	 */
+	private URL getImageURL(URL site, String linkStr){
+		if(linkStr.contains("#")){
+			linkStr = linkStr.substring(0, linkStr.indexOf("#"));
+		}
+		if(linkStr.contains("?")){
+			linkStr = linkStr.substring(0, linkStr.indexOf("?"));
+		}
+		return getURL(site, linkStr);
+	}
+	
+	/**
+	 * Stops this crawler.
+	 */
 	public void stop(){
 		this.stop = true;
 	}
