@@ -24,6 +24,11 @@ public class Parameters{
 	private int threadCount = 4;
 	private boolean recursive = false;
 	private File outFolder = null;
+	private boolean whole = false;
+	
+	public boolean getWhole(){
+		return this.whole;
+	}
 	
 	public boolean getRecursive(){
 		return this.recursive;
@@ -90,5 +95,10 @@ public class Parameters{
 	@Option(name = "-r", aliases = "--recursive", usage = "Set the recursive status of the crawlers")
 	public void setRecursive(boolean recursive){
 		this.recursive = recursive;
+	}
+	
+	@Option(name = "-w", aliases = "--whole", usage = "Crawl the whole site")
+	public void setWhole(boolean whole){
+		this.whole = whole;
 	}
 }

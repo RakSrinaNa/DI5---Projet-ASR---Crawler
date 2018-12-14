@@ -44,14 +44,14 @@ public class Main{
 		
 		Set<URL> crawled = ConcurrentHashMap.newKeySet();
 		Set<URL> downloaded = ConcurrentHashMap.newKeySet();
-		Queue<URL> toCrawl = new LimitedThreadConcurrentLinkedList<>(parameters.getSites());
-		Queue<DownloadElement> images = new LimitedGlobalConcurrentLinkedQueue<>();
+		Queue<URL> toCrawl = new ConcurrentLinkedQueue<>(parameters.getSites());
+		Queue<DownloadElement> images = new ConcurrentLinkedQueue<>();
 
 		LOGGER.info("Added {} sites with {} threads ({} crawlers, {} downloaders)", parameters.getSites().size(), (int) (1.5 * parameters.getThreadCount()), parameters.getThreadCount(), parameters.getThreadCount());
 		
 		ExecutorService service = Executors.newFixedThreadPool((int) (1.5 * parameters.getThreadCount()));
 		
-		List<CrawlerRunner> crawlers = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new CrawlerRunner(toCrawl, crawled, images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())), parameters.getRecursive())).collect(Collectors.toList());
+		List<CrawlerRunner> crawlers = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new CrawlerRunner(toCrawl, crawled, images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())), parameters.getRecursive(), parameters.getWhole(), parameters.getSites())).collect(Collectors.toList());
 		List<DownloaderRunner> downloaders = IntStream.range(0, parameters.getThreadCount()).mapToObj(i -> new DownloaderRunner(parameters.getOutFolder(), images, downloaded, HEADERS.get(ThreadLocalRandom.current().nextInt(HEADERS.size())))).collect(Collectors.toList());
 		
 		List<Future<Integer>> futuresCrawler = crawlers.stream().map(service::submit).collect(Collectors.toList());

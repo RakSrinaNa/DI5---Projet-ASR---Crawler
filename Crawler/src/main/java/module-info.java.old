@@ -11,4 +11,8 @@ module Crawler {
 	requires args4j;
 	requires org.slf4j;
 	requires unirest.java;
+	requires java.scripting;
+	requires org.apache.logging.log4j;
+	
+	exports fr.mrcraftcod.crawler to args4j;
 }
