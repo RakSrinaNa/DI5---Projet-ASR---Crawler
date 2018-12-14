@@ -5,10 +5,7 @@ import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,6 +32,8 @@ public class CrawlerRunner implements Callable<Integer>{
 	private final Set<URL> downloaded;
 	private final HashMap<String, String> headers;
 	private final boolean recursive;
+	private final boolean whole;
+	private final Collection<URL> baseLinks;
 	private boolean stop = false;
 	
 	/**
@@ -47,13 +46,15 @@ public class CrawlerRunner implements Callable<Integer>{
 	 * @param headers    The set of headers to use.
 	 * @param recursive  True if the crawler is crawling recursively.
 	 */
-	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded, HashMap<String, String> headers, boolean recursive){
+	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded, HashMap<String, String> headers, boolean recursive, boolean whole, Collection<URL> baseLinks){
 		this.toCrawl = toCrawl;
 		this.crawled = crawled;
 		this.images = images;
 		this.downloaded = downloaded;
 		this.headers = headers;
 		this.recursive = recursive;
+		this.whole = whole;
+		this.baseLinks = baseLinks;
 	}
 	
 	@Override
@@ -75,19 +76,20 @@ public class CrawlerRunner implements Callable<Integer>{
 						final var rootDocument = Jsoup.parse(requestResult.getBody());
 						var stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
 							if(aElem.hasAttr("href")){
-								return aElem.absUrl("href");
+								return aElem.attr("href");
 							}
 							if(aElem.hasAttr("data-image")){
-								return aElem.absUrl("data-image");
+								return aElem.attr("data-image");
 							}
 							return null;
-						}).filter(Objects::nonNull).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
-						var stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
+						}).filter(Objects::nonNull);
+						var stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.attr("src"));
+						var streamLinks = Stream.concat(stream1, stream2).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
 						images.addAll(rootDocument.getElementsByTag("img").parallelStream().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getImageURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link)).map(link -> new DownloadElement(site, link)).collect(Collectors.toSet()));
 						
 						var added = 0;
 						var picAdded = 0;
-						for(var link : Stream.concat(stream1, stream2).collect(Collectors.toSet())){
+						for(var link : streamLinks.collect(Collectors.toSet())){
 							var paths = link.getPath().split("/");
 							if(paths.length > 0){
 								var resource = paths[paths.length - 1];
@@ -100,7 +102,7 @@ public class CrawlerRunner implements Callable<Integer>{
 									}
 								}
 								else if(!crawled.contains(link)){
-									if(link.getHost().equals(site.getHost())){
+									if(Objects.equals(site.getHost(), link.getHost()) && (whole || isBaseLink(link))){
 										if(recursive && !toCrawl.contains(link)){
 											if(toCrawl.add(link)){
 												added++;
@@ -141,6 +143,10 @@ public class CrawlerRunner implements Callable<Integer>{
 		}
 		LOGGER.info("Crawler stopped");
 		return crawledCount;
+	}
+	
+	private boolean isBaseLink(URL link){
+		return baseLinks.stream().anyMatch(l -> Objects.equals(l.getHost(), link.getHost()) && link.getPath().startsWith(l.getPath()));
 	}
 	
 	/**
