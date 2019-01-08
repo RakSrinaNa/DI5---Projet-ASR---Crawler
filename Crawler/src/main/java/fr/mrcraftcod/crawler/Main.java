@@ -45,7 +45,7 @@ public class Main{
 		Set<URL> crawled = ConcurrentHashMap.newKeySet();
 		Set<URL> downloaded = ConcurrentHashMap.newKeySet();
 		Queue<URL> toCrawl = new ConcurrentLinkedQueue<>(parameters.getSites());
-		Queue<DownloadElement> images = new ConcurrentLinkedQueue<>();
+		Queue<DownloadElement> images = new LimitedThreadConcurrentLinkedQueue<>();
 
 		LOGGER.info("Added {} sites with {} threads ({} crawlers, {} downloaders)", parameters.getSites().size(), (int) (1.5 * parameters.getThreadCount()), parameters.getThreadCount(), parameters.getThreadCount());
 		
