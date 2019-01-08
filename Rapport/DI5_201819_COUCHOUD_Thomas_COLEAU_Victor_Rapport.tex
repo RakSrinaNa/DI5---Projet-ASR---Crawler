@@ -432,6 +432,17 @@
 				Dans le cas où on souhaiterait crawler un site particulièrement vigilant il est fortement recommandé d'utiliser la version la moins aggressive du crawler.
 	
 	\chapter{Proxy}
+	    Au vu des éléments précédemment évoqués, un moyen semblant particulièrement efficace de masquer un crawler serait de changer régulièrement d'adresse IP.
+	    De ce fait, des comportements pouvant être suspects pour une seule adresse ne le seront plus une fois répartis sur plusieurs.
+	    
+	    Une méthode simple et efficace serait donc de passer par un ou plusieurs proxy.
+	    Tel qu'est développé actuellement notre programme, il serait facile d'imaginer que chaque machine du cluster proxy exécute un seul thread.
+	    Dans ce cas, chaque thread aurait donc une adresse IP d'origine différente des autres et les liens visités ne seraient alors plus vu comme venant d'un même utilisateur.
+	    
+	    
+	    Il est à noter tout de même qu'avec une telle procédure, le crawler ne serait pas protéger contre une analyse poussée du schéma de visite du site.
+	    En effet, les liens crawlés par les threads étant répartit de manière pseudo-aléatoire entre thread, aucun d'entre-eux n'aurait de suite cohérente de lien à visiter.
+	    Il serait alors plus que probable que des sauts de pages normalement impossibles se réalise pouvant indiquer au site qu'il ne s'agit pas d'un visiteur normal.
 		
 
 \part{Conclusion}
