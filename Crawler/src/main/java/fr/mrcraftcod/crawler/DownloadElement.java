@@ -13,16 +13,32 @@ public class DownloadElement{
 	private final URL source;
 	private final URL url;
 	
-	public DownloadElement(URL source, URL url){
+	/**
+	 * Constructor.
+	 *
+	 * @param source The source of the element.
+	 * @param url    The url of the element.
+	 */
+	DownloadElement(URL source, URL url){
 		this.source = source;
 		this.url = url;
 	}
 	
+	/**
+	 * Get the source url.
+	 *
+	 * @return The url.
+	 */
 	public URL getSource(){
 		return source;
 	}
 	
-	public URL getUrl(){
+	/**
+	 * Get the element url.
+	 *
+	 * @return The element url.
+	 */
+	URL getUrl(){
 		return url;
 	}
 	

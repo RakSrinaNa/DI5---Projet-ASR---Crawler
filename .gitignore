@@ -4,5 +4,10 @@ Rapport/.texpadtmp
 *.iml
 .idea
 target
-*.log
+Crawler/log/
 Crawler/Download
+
+Rapport/DI5_201819_COUCHOUD_Thomas_COLEAU_Victor_Rapport\.log
+
+Rapport/build/DI5_201819_COUCHOUD_Thomas_COLEAU_Victor_Rapport\.log
+Crawler/logs

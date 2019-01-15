@@ -1,21 +1,19 @@
 package fr.mrcraftcod.crawler;
 
-import com.mashape.unirest.http.HttpResponse;
 import fr.mrcraftcod.utils.http.requestssenders.get.StringGetRequestSender;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.URL;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * The crawler itself.
+ * <p>
  * Created by Thomas Couchoud (MrCraftCod - zerderr@gmail.com) on 2018-09-21.
  *
  * @author Thomas Couchoud
@@ -32,23 +30,40 @@ public class CrawlerRunner implements Callable<Integer>{
 	private final Set<URL> crawled;
 	private final Queue<DownloadElement> images;
 	private final Set<URL> downloaded;
+	private final HashMap<String, String> headers;
+	private final boolean recursive;
+	private final boolean whole;
+	private final Collection<URL> baseLinks;
 	private boolean stop = false;
 	
-	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded){
+	/**
+	 * Constructor.
+	 *
+	 * @param toCrawl    The queue of the links to crawl.
+	 * @param crawled    The set of crawled links.
+	 * @param images     The queue of images to download.
+	 * @param downloaded The set of downloaded images.
+	 * @param headers    The set of headers to use.
+	 * @param recursive  True if the crawler is crawling recursively.
+	 */
+	public CrawlerRunner(Queue<URL> toCrawl, Set<URL> crawled, Queue<DownloadElement> images, Set<URL> downloaded, HashMap<String, String> headers, boolean recursive, boolean whole, Collection<URL> baseLinks){
 		this.toCrawl = toCrawl;
 		this.crawled = crawled;
 		this.images = images;
 		this.downloaded = downloaded;
+		this.headers = headers;
+		this.recursive = recursive;
+		this.whole = whole;
+		this.baseLinks = baseLinks;
 	}
 	
 	@Override
-	public Integer call() throws Exception{
+	public Integer call(){
 		LOGGER.info("Crawler started");
-		int crawledCount = 0;
-		int retryCounter = 0;
+		var crawledCount = 0;
+		var retryCounter = 0;
 		while(!stop){
 			try{
-				
 				URL site;
 				if((site = toCrawl.poll()) != null){
 					crawled.add(site);
@@ -56,27 +71,28 @@ public class CrawlerRunner implements Callable<Integer>{
 					
 					LOGGER.info("Crawler is crawling link {}", site);
 					
-					final HttpResponse<String> requestResult = new StringGetRequestSender(site).getRequestResult();
+					final var requestResult = new StringGetRequestSender(site, headers).getRequestResult();
 					if(requestResult.getStatus() == 200){
-						final Document rootDocument = Jsoup.parse(requestResult.getBody());
-						Stream<URL> stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
-							if(aElem.hasAttr("href"))
+						final var rootDocument = Jsoup.parse(requestResult.getBody());
+						var stream1 = rootDocument.getElementsByTag("a").parallelStream().map(aElem -> {
+							if(aElem.hasAttr("href")){
 								return aElem.attr("href");
-							if(aElem.hasAttr("data-image"))
+							}
+							if(aElem.hasAttr("data-image")){
 								return aElem.attr("data-image");
+							}
 							return null;
-						}).filter(Objects::nonNull).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
+						}).filter(Objects::nonNull);
+						var stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.attr("src"));
+						var streamLinks = Stream.concat(stream1, stream2).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
+						images.addAll(rootDocument.getElementsByTag("img").parallelStream().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.absUrl("src")).map(linkStr -> getImageURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link)).map(link -> new DownloadElement(site, link)).collect(Collectors.toSet()));
 						
-						Stream<URL> stream2 = Stream.concat(rootDocument.getElementsByTag("video").stream(), rootDocument.getElementsByTag("source").stream()).parallel().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.attr("src")).map(linkStr -> getURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link));
-						
-						images.addAll(rootDocument.getElementsByTag("img").parallelStream().filter(aElem -> aElem.hasAttr("src")).map(aElem -> aElem.attr("src")).map(linkStr -> getImageURL(site, linkStr)).filter(Objects::nonNull).filter(link -> !downloaded.contains(link)).map(link -> new DownloadElement(site, link)).collect(Collectors.toSet()));
-						
-						int added = 0;
-						int picAdded = 0;
-						for(URL link : Stream.concat(stream1, stream2).collect(Collectors.toSet())){
-							String[] paths = link.getPath().split("/");
+						var added = 0;
+						var picAdded = 0;
+						for(var link : streamLinks.collect(Collectors.toSet())){
+							var paths = link.getPath().split("/");
 							if(paths.length > 0){
-								String resource = paths[paths.length - 1];
+								var resource = paths[paths.length - 1];
 								if(MEDIA_PATTERN.matcher(resource).matches()){
 									link = getImageURL(site, link.toString());
 									if(!downloaded.contains(link)){
@@ -86,8 +102,8 @@ public class CrawlerRunner implements Callable<Integer>{
 									}
 								}
 								else if(!crawled.contains(link)){
-									if(link.getHost().equals(site.getHost())){
-										if(!toCrawl.contains(link)){
+									if(Objects.equals(site.getHost(), link.getHost()) && (whole || isBaseLink(link))){
+										if(recursive && !toCrawl.contains(link)){
 											if(toCrawl.add(link)){
 												added++;
 											}
@@ -107,8 +123,7 @@ public class CrawlerRunner implements Callable<Integer>{
 						LOGGER.error("Response code for page {} was {}", site, requestResult.getStatus());
 					}
 					
-					if(images.size() > 1000)
-					{
+					if(images.size() > 1000){
 						LOGGER.info("Crawler waiting, too many images to download");
 						Thread.sleep(10000);
 					}
@@ -130,16 +145,18 @@ public class CrawlerRunner implements Callable<Integer>{
 		return crawledCount;
 	}
 	
-	private URL getImageURL(URL site, String linkStr){
-		if(linkStr.contains("#")){
-			linkStr = linkStr.substring(0, linkStr.indexOf("#"));
-		}
-		if(linkStr.contains("?")){
-			linkStr = linkStr.substring(0, linkStr.indexOf("?"));
-		}
-		return getURL(site, linkStr);
+	private boolean isBaseLink(URL link){
+		return baseLinks.stream().anyMatch(l -> Objects.equals(l.getHost(), link.getHost()) && link.getPath().startsWith(l.getPath()));
 	}
 	
+	/**
+	 * Get the full url of a link.
+	 *
+	 * @param site    The url from where the link have been found.
+	 * @param linkStr The url.
+	 *
+	 * @return The full url.
+	 */
 	private URL getURL(URL site, String linkStr){
 		linkStr = linkStr.replace(" ", "%20");
 		try{
@@ -169,6 +186,27 @@ public class CrawlerRunner implements Callable<Integer>{
 		return null;
 	}
 	
+	/**
+	 * Get the full url of an image.
+	 *
+	 * @param site    The url from where the image have been found.
+	 * @param linkStr The url of the image.
+	 *
+	 * @return A full image url.
+	 */
+	private URL getImageURL(URL site, String linkStr){
+		if(linkStr.contains("#")){
+			linkStr = linkStr.substring(0, linkStr.indexOf("#"));
+		}
+		if(linkStr.contains("?")){
+			linkStr = linkStr.substring(0, linkStr.indexOf("?"));
+		}
+		return getURL(site, linkStr);
+	}
+	
+	/**
+	 * Stops this crawler.
+	 */
 	public void stop(){
 		this.stop = true;
 	}

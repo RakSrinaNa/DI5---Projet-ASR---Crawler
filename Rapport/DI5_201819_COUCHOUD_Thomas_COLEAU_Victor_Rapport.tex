@@ -25,11 +25,11 @@
 \student{Victor}{Coleau}{victor.coleau@etu.univ-tours.fr}
 \academicsupervisor{Mathieu}{Delalandre}{mathieu.delalandre@univ-tours.fr}
 
-\resume{} %TODO
-\motcle{} %TODO
+\resume{Crawler les sites web est de plus en plus difficile étant donné que les moyens de défense se multiplient. Nous allons ici étudier plusieurs techniques afin d'essayer de rendre son crawler inaperçu}
+\motcle{crawler,scrapping,web,user-agent,proxy}
 
-\abstract{} %TODO
-\keyword{} %TODO
+\abstract{Crawling websites became more and more difficult as means of defence are increasing. We will study different ways to try to make our crawler unnoticed from the websites.}
+\keyword{crawler,scrapping,web,user-agent-proxy}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -52,19 +52,19 @@
 	Le but de ce projet est d'étudier à la fois les techniques mises en place par les crawler pour se rendre invisible et celles mise en place par les sites pour se défendre.
 	Cette recherche se concrétisera par la réalisation d'un crawler effectuant ses connexions au travers d'un proxy.
 
-	\img{crawler.png}{Crawler}{0.5}
+	\img{crawler.png}{Crawler}{scale=0.5}
 	
 \part{Veille technique}
 	\chapter{Stratégies de défense}
-		Afin de se défendre face aux demandes massives que peuvent représenter les crawlers, les créateurs de sites web ont imaginés plusieurs méthodes de contre-attaque.
-		Dans cette partie nous allons en développer quelques unes.
+		Afin de se défendre face aux demandes massives que peuvent représenter les crawlers, les créateurs de sites web ont imaginé plusieurs méthodes de contre-attaque.
+		Dans cette partie nous allons en développer quelques-unes.
 		
 		\section{Liste noire\label{sec:liste_noire}}
 			Le principe de base d'une liste noire est de bannir du site les << utilisateurs >> trop agressifs.
 			Un << utilisateur >> peut être un compte inscrit sur le site ou plus simplement une adresse IP requêtant le serveur.	
 			
-			La problématique principale de cette méthode est différencier un utilisateur humain d'un automate.
-			Afin de prendre la décision de bannir ou non, plusieurs moyens sont à disposition des administrateurs:
+			La problématique principale de cette méthode est de différencier un utilisateur humain d'un automate.
+			Afin de prendre la décision de bannir ou non, plusieurs stratégies sont à disposition des administrateurs:
 			
 			\begin{easylist}[itemize]
 				@ User-agent: Le \gls{ua} est un champ renseigné dans l'entête d'une requête HTTP.
@@ -78,16 +78,16 @@
 				@ Comportement de l'utilisateur: A partir des méthodes d'identifications précédentes, il est possible de définir une stratégie de bannissement plus juste.
 				En effet bannir tous les navigateurs qui ne sont pas Internet Explorer ou bien toutes les adresses IP commençant par 1 n'est que peu pertinent.
 				
-				Il est alors possible d'étudier les méthodes d'explorations du site afin de dénicher les comportement indésirables.
+				Il est alors possible d'étudier les méthodes d'exploration du site afin de dénicher les comportements indésirables.
 				Ces derniers peuvent être plus ou moins simples à observer.
 				@@ Un nombre de requêtes humainement impossible (ex: 5 requêtes par seconde).
 				@@ Des temps de visite des pages très courts (ex: 0.5 secondes par page).
 				@@ Une fréquence de requêtage régulière (ex: toutes les secondes).
-				@@ Les sauts de pages à d'autres non reliées par hyperlien.
+				@@ Des sauts de pages à d'autres non reliées par hyperlien.
 			\end{easylist}
 			~\\
 			
-			La pertinence de cette méthode de bannissement dépends grandement de la qualité de reconnaissance des automates.
+			La pertinence de cette méthode de bannissement dépend grandement de la qualité de reconnaissance des automates.
 			En effet, il se peut qu'un automate imite parfaitement le comportement humain, et donc ne soit pas détecté, tout comme un comportement humain inhabituel pourrait être banni par erreur.
 			L'objectif est donc de développer des méthodes de reconnaissance adaptées afin de ne pas perdre des visiteurs désirés.
 			
@@ -102,11 +102,11 @@
 			
 			\begin{figure}[H]
 				\begin{minipage}{0.5\textwidth}
-					\img{recaptcha-3.jpg}{Lettres altérées}{0.5}
-					\img{recaptcha-1.jpg}{Case à cocher}{0.5}
+					\img{recaptcha-3.jpg}{Lettres altérées}{scale=0.5}
+					\img{recaptcha-1.jpg}{Case à cocher}{scale=0.5}
 				\end{minipage}
 				\begin{minipage}{0.49\textwidth}
-					\img{recaptcha-2.png}{Reconnaissance d'image}{0.5}
+					\img{recaptcha-2.png}{Reconnaissance d'image}{scale=0.5}
 				\end{minipage}
 				\caption{Exemples de reCAPTCHAs}
 			\end{figure}
@@ -125,9 +125,70 @@
             
             Cependant, un crawler innatentif ne fera pas la différence entre des éléments visibles ou non.
             On pourrait donc renforcer la sécurité du site grâce à des liens pigés et bannir toute IP s'y rendant.
+            
+    \chapter{Outils d'analyse}
+    	Lors de la réalisation de notre crawler et des stratégies de masquage qu'il implémente, nous avons dû analyser les traces qu'il laisse sur un site.
+    	Pour cela nous avons mis en place un serveur apache et lancé notre crawler dessus.
+    	
+    	Nous allons ici présenter deux manières d'analyser l'activité des clients d'un serveur.
+    	
+		\section{Logs}
+			La manière la plus simple de voir le traffic de notre site est de regarder les logs.
+			
+			\bashsourcefile{CrawlingLogs/uaRapport.log}
+			
+			L'exemple ci-dessus est un extrait de l'un de ces logs.
+			On y retrouve les informations suivantes:
+			\begin{easylist}[itemize]
+				@ Adresse IP du client.
+				@ Le nom de domaine.
+				@ L'heure.
+				@ Le type de requête (GET, POST, ...).
+				@ La page demandée.
+				@ Le protocol (HTTP/1.1).
+				@ Le code HTTP retourné (200, 404, 403, 500, ...).
+				@ La taille de la réponse.
+				@ Origine de la requête.
+				@ \gls{ua}.
+			\end{easylist}
+
+			Grâce à celles-ci nous pouvons identifier deux des caractéristiques citées plus haut (\gls{ua} et IP) du client.
+			
+			Nous pouvons, à partir d'un tel fichier, induire des informations plus poussées.
+			Par exemple il est possible de recréer le chemin parcouru par l'utilisateur grâce à son adresse IP, \gls{ua} et temps de la requête.
+			
+			Du fait de sa grossièreté, le fichier de log est peu pratique à lire et interpréter.
+			En revanche, un algorithme performant pourra repérer les utilisations incohérentes, impossibles et/ou humainement infaisables.
+			
+		\section{Urchin}
+			Afin de simplifier l'analyse des logs pour tout le monde, des outils spécifiques ce sont créés.
+			Nous allons ici présenter Urchin v6 qui analyse les logs et offre des vues graphiques de nombreuses métriques.
+			Ces dernières peuvent être obtenues sur différentes périodes (journée, mois, période définie, ...).
+			
+			\img{u1.png}{Nombre de visites}{}
+			
+			Sur ces représentations graphiques nous pouvons facilement analyser les pics de fréquentation.
+			Ceux-ci peuvent être associés à l'arrivée d'un bot.
+			
+			\img{u2.png}{Temps de visite}{}
+			
+			Ce schéma nous illustre les temps de visites par page.
+			Si un pic entre 0-10 secondes se fait ressentir, il est possible que cela soit dû à un automate.
+			
+			\img{u3.png}{Provenance des visites}{}
+			
+			Dans le cas d'un site localisé (une langue précise par exemple), il peut être utile d'obtenir les origines des requêtes.
+			Si un grand nombre sont effectuées depuis un pays extérieur, il est peu probable que cela soit normal.
+			
+			\img{u4.png}{Robots/User-Agents}{}
+			\img{u5.png}{Robots/User-Agents précis}{}
+			
+			Sur cette page nous pouvons observer les \glspl{ua} qui nous ont visités.
+			Si l'on en repère un étrange et récurrent, il faut alors se poser des questions.
+			Il est aussi possible d'obtenir plus de détails sur chaque robot.
 
 	\chapter{Stratégies de masquage}
-		Comme décris précédemment, les gestionnaires de sites web tentent constamment de bloquer l'accès à leur contenu au travers de diverses méthodes.
+		Comme évoqué précédemment, les gestionnaires de sites web tentent constamment de bloquer l'accès à leur contenu au travers de diverses méthodes.
 		Ces dernières reposent principalement sur le bloquage d'un identifiant unique à la personne suite au repérage d'un comportement suspect.
 		
 		Les personnes attaquant les sites ont donc pour but de contourner ces mesures, soit en ayant plusieurs identifiants à leur disposition soit en essayant d'adopter un comportement proche d'un utilisateur normal.
@@ -167,13 +228,13 @@
 			De plus, certains sites utilisent des sessions ou comptes utilisateurs.
 			Un crawler pourrait donc en tirer parti en s'indentifiant officiellement sur le site afin de se faire passer pour un utilisateur standard.
 
-			Il est d'ailleurs poissible de créer et d'utiliser plusieurs comptes en parrallèle afin de répartir la charge de requêtes.
+			Il est d'ailleurs possible de créer et d'utiliser plusieurs comptes en parallèle afin de répartir la charge de requêtes.
 
 	\chapter{Les proxy\label{sec:proxys}}
 		\section{Késako?}
 			Un proxy est un composant logiciel servant d'intermédiaire entre deux hôtes afin de faciliter ou de surveiller leurs échanges.
 			
-			\img{proxy.png}{La place d'un proxy dans une communicatiob}{}
+			\img{proxy.png}{La place d'un proxy dans une communication}{}
 			
 			\subsection{Avantages}
 				Les proxys peuvent par exemple servir à contourner certains filtrages.
@@ -279,26 +340,125 @@
 				\begin{tabularx}{\textwidth}{|X|X|}
 					\hline
 					Site & Observations\\\hline
-					\href{https://en.wikipedia.org/wiki/Main_Page}{Wikipedia} & \\\hline
-					\href{https://www.qwertee.com/}{Qwertee} & \\\hline
-					\href{https://www.etam.com/}{Etam} & \\\hline
-					\href{https://www.google.com/}{Google} & \\\hline
-					\href{https://www.4chan.org/}{4chan} & \\\hline
-					\href{https://tinder.com/}{Tinder} & \\\hline
-					\href{https://www.prettylittlethings.fr/}{PrettyLittleThings} & \\\hline
-					\href{https://www.ladechetterieduweb.com/}{LaDechetterieDuWeb} & \\\hline
-					\href{https://www.qwertee.com/}{Qwertee} & \\\hline
+					\href{https://en.wikipedia.org/wiki/Main_Page}{Wikipedia} & Aucune restriction\\\hline
+					\href{https://www.qwertee.com/}{Qwertee} & Aucune restriction\\\hline
+					\href{https://www.etam.com/}{Etam} & Aucune restriction\\\hline
+					\href{https://www.google.com/}{Google} & Bloqué assez rapidement\\\hline
+					\href{https://www.4chan.org/}{4chan} & Aucune restriction\\\hline
+					\href{https://tinder.com/}{Tinder} & Nécessite une authentification + JavaScript\\\hline
+					\href{https://www.prettylittlethings.fr/}{PrettyLittleThings} & JavaScript\\\hline
+					\href{https://www.ladechetterieduweb.com/}{LaDechetterieDuWeb} & JavaScript\\\hline
 				\end{tabularx}
 				\captionof{table}{Résultats sur différents sites}
 			\end{center}
+			
+			D'après nos tests effectués sur plusieurs sites, nous pouvons remarquer que les principaux freins au crawling sont les sites nécessitant une inscription ou ceux ayant un chargement dynamique grâce à du JavaScript.
 	
 	\chapter{Utilisation de stratégies de masquage}
+		Afin de faire ressembler au mieux les requêtes de notre crawler à celles d'un navigateur standard nous avons décidé d'imiter le plus fidèlement possible leur header.
+		Pour cela nous avons commencé par inspecter les données que reçois le serveur suite à la navigation depuis Firefox.
 		
+		\phpsourcefile{req.php}
+		
+		Avec ce code nous obtenons le résultat suivant:
+		\img{headFirefox.png}{Paramètres de la requête GET}{}
+			
+		\section{User agent}
+			La première chose a été de changer le \gls{ua}. Etant donné que nous utilisons une librairie (Unirest), il nous suffit de passer en paramètre nos headers.
+			Ces derniers sont basés sur les tests précédents:
+			\begin{easylist}[itemize]
+				@ Le \gls{ua}
+				@ Accept
+				@ Aceept-Encoding
+				@ Accept-Language
+				@ Cache-Control
+			\end{easylist}
+
+			Après un test réalisé en local, nous avons pu confirmer que les headers parviennent bien au serveur et le User-Agent est bien celui défini dans le code.
+			
+			Les logs Apache étaient auparavant:
+			\bashsourcefile{CrawlingLogs/basicRapport.log}
+			
+			Ils sont maintenant:
+			\bashsourcefile{CrawlingLogs/uaRapport.log}
+			 
+		\section{Limite de requêtage}
+			La deuxième étape consiste à limiter le nombre de requêtes envoyées au serveur.
+			Nous avons imaginé deux méthodes: limiter chaque thread ou limiter l'ensemble de ces derniers.
+			
+			Dans les deux cas nous faisons une surcharge de ConcurrentLinkedQueue et n'avons plus qu'à gérer le délais d'accès.
+			En effet la classe mère gère déjà les accès concurrents.
+			
+			\subsection{Sur l'ensemble}
+				Cette classe s'intitule  LimitedGlobalConcurrentLinkedQueue.
+				Dans celle-ci nous avons redéfini la méthode poll permettant d'obtenir le prochain élément.
+				
+				Le procédé est le suivant:
+				\begin{easylist}[itemize]
+					@ On calcule le $\Delta t$ séparant le temps de notre demande d'accès et le temps du dernier accès à une valeur.
+					@ Si ce $\Delta t$ est inférieur à un $\Delta_r$ de référence on endort le thread pour une durée de $\Delta_r - \Delta t$.
+					
+					Ce temps écoulé, le thread réitérera sa demande.
+					@ Si $\Delta t$ est supérieur à $\Delta_r$ on met à jour le temps du dernier accès et donnons le prochain élément.
+				\end{easylist}
+
+				Grâce à cette implémentation nous arrivons à passer plus inaperçu auprès du serveur crawlé.
+				Cependant on induit un temps d'attente global très fort ralentissant \textit{de facto} l'exécution de notre programme.
+			
+			\subsection{Par thread}
+				Cette classe s'intitule  LimitedThreadConcurrentLinkedQueue.
+				Dans celle-ci nous avons redéfini la méthode poll permettant d'obtenir le prochain élément.
+				
+				Le procédé est le suivant:
+				\begin{easylist}[itemize]
+					@ On calcule le $\Delta t$ séparant le temps de notre demande d'accès et le temps du dernier accès du thread en cours à une valeur.
+					@ Si ce $\Delta t$ est inférieur à un $\Delta_r$ de référence on endort le thread pour une durée de $\Delta_r - \Delta t$.
+					@ A son réveil (si il y eut), on met à jour le temps du dernier accès et donnons le prochain élément.
+				\end{easylist}
+
+				En comparaison à la méthode globale, celle-ci est largement plus rapide mais de fait moins discrète.
+				
+			\subsection{Etude des logs}
+				Les logs pour la version bloquant l'ensemble sont:
+				\bashsourcefile{CrawlingLogs/globalBlockingRapport.log}
+				
+				Les logs pour la version bloquant chaque thread sont:
+				\bashsourcefile{CrawlingLogs/threadBlockingRapport.log}
+				
+				Dans les deux cas, nous n'avons gardé que 2 secondes de log.
+				On peut déjà remarquer que la version bloquant les threads individuellement envoie beaucoup plus de requêtes.
+				
+				Au nombre de log par seconde, on voit bien que la version bloquant l'ensemble des threads est beaucoup plus limitante et passe un peu plus inaperçue auprès des sites.
+				Dans le cas où on souhaiterait crawler un site particulièrement vigilant il est fortement recommandé d'utiliser la version la moins aggressive du crawler.
 	
 	\chapter{Proxy}
+	    Au vu des éléments précédemment évoqués, un moyen semblant particulièrement efficace de masquer un crawler serait de changer régulièrement d'adresse IP.
+	    De ce fait, des comportements pouvant être suspects pour une seule adresse ne le seront plus une fois répartis sur plusieurs.
+	    
+	    Une méthode simple et efficace serait donc de passer par un ou plusieurs proxy.
+	    Tel qu'est développé actuellement notre programme, il serait facile d'imaginer que chaque machine du cluster proxy exécute un seul thread.
+	    Dans ce cas, chaque thread aurait donc une adresse IP d'origine différente des autres et les liens visités ne seraient alors plus vu comme venant d'un même utilisateur.
+	    
+	    
+	    Il est à noter tout de même qu'avec une telle procédure, le crawler ne serait pas protéger contre une analyse poussée du schéma de visite du site.
+	    En effet, les liens crawlés par les threads étant répartit de manière pseudo-aléatoire entre thread, aucun d'entre-eux n'aurait de suite cohérente de lien à visiter.
+	    Il serait alors plus que probable que des sauts de pages normalement impossibles se réalise pouvant indiquer au site qu'il ne s'agit pas d'un visiteur normal.
 		
 
 \part{Conclusion}
 
-\appendix		
+    En conclusion, ce projet porta sur deux aspects fondamentalement opposés bien qu'étroitement liés de la diffusion d'information sur internet : la collecte de masse face à une diffusion controlée.
+    
+    Comme étudié dans ce rapport, les créateurs de contenu ont à leur disposition plusieurs techniques afin de contrer les utilisateurs peu scrupuleux collectant de grandes quantités de données.
+    L'objectif final reste toujours le même repérer des comportements étranges afin de les identifier comme ne venant pas de navigateur (et utilisateurs) conventionnels afin de bannir les adresses IP concernées.
+    
+    
+    De l'autre coté, les personnes souhaitant amasser les informations ont deux principales possibilités pour passer outre ces protections : développer des crawlers respectueux ou tenter d'éviter les mécaniqmes de défense.
+    
+    Dans le premier cas, plusieurs détails peuvent permettre de ne pas déranger le serveur : tenir compte du fichier robot.txt, ralentir la vitesse de requêtage, etc.
+    Dans le second cas, afin d'éviter de se faire repérer, il est possible de modifier les headers des requêtes, changer régulièrement d'adresse IP, suivre un schéma de visite, etc.
+    Dans tous les cas l'objectif est de se rapprocher le plus possible d'un comportement d'un utilisateur.
+    Ces comportements sont tout de même déconseillés.
+
+%\appendix		
 \end{document}

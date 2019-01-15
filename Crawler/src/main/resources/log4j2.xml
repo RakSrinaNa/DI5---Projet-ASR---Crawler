@@ -4,13 +4,18 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} %highlight{%-5level [%t] - %C{1}.%method:%L} - %msg%n"/>
         </Console>
-        <RollingFile name="MyFile" fileName="log/log.log" filePattern="log/log-%d{yyyy-MM-dd}-%i.log">
+        <RollingFile name="RollingFile" fileName="logs/Crawler.log" filePattern="logs/Crawler-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %l - %msg%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="14"/>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs/" maxDepth="1">
+                    <IfFileName glob="Crawler-*"/>
+                    <IfAccumulatedFileCount exceeds="10"/>
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
     </Appenders>
     <Loggers>
@@ -19,9 +24,9 @@
         </Logger>
         <Logger name="fr.mrcraftcod.crawler" level="info">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="MyFile"/>
+            <AppenderRef ref="RollingFile"/>
         </Logger>
-        <Root level="error">
+        <Root level="info">
         </Root>
     </Loggers>
 </Configuration>
